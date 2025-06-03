@@ -1,0 +1,140 @@
+{% extends 'core/base.html' %}
+{% load core_extras %}
+
+{% block title %}Thanh Toán{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5 hero-section mb-4">
+    <div class="container">
+        <h1 class="display-4 text-center mb-4 text-white">Thanh Toán</h1>
+        <p class="lead text-center mb-0 text-white-50">Hoàn tất đơn hàng của bạn</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-lg rounded-3 border-0 mb-4">
+                <div class="card-header bg-white border-0">
+                    <h3 class="mb-0" style="color: var(--primary-red);">Chi Tiết Đơn Hàng</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Món ăn</th>
+                                    <th class="text-center">Số lượng</th>
+                                    <th class="text-end">Đơn giá</th>
+                                    <th class="text-end">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart.items.all %}
+                                <tr class="align-middle">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="{{ item.product_image_url }}" alt="{{ item.product_name }}" 
+                                                 class="rounded shadow-sm" style="width: 60px; height: 60px; object-fit: cover;"
+                                                 onerror="this.src='https://via.placeholder.com/60?text=No+Image'">
+                                            <span class="ms-3 fw-500">{{ item.product_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">{{ item.quantity }}</td>                                    <td class="text-end price-tag">{{ item.price|format_price }}</td>
+                                    <td class="text-end price-tag">{{ item.price|multiply:item.quantity|format_price }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Tổng cộng:</strong></td>
+                                    <td class="text-end"><strong class="price-tag h5">{{ total|format_price }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-lg rounded-3 border-0">
+                <div class="card-header border-0" style="background: var(--primary-red);">
+                    <h3 class="mb-0 text-white">Thông Tin Thanh Toán</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label">Phương thức thanh toán</label>
+                            <select name="payment_method" class="form-select" required>
+                                <option value="">Chọn phương thức thanh toán</option>
+                                {% for value, label in payment_methods %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Địa chỉ giao hàng</label>
+                            <textarea name="address" class="form-control bg-light" rows="2" readonly>{{ request.user.address }}</textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Ghi chú</label>
+                            <textarea name="note" class="form-control" rows="3" 
+                                      placeholder="Hướng dẫn đặc biệt cho việc giao hàng"></textarea>
+                        </div>
+                        <div class="d-grid gap-3">
+                            <button type="submit" class="btn btn-lg checkout-btn" style="background: var(--primary-red); color: white;">
+                                <i class="fas fa-check-circle me-2"></i>Đặt Hàng
+                            </button>
+                            <a href="{% url 'cart_detail' %}" class="btn btn-lg btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Quay Lại Giỏ Hàng
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus {
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 0.25rem rgba(255, 160, 0, 0.25);
+    }
+    
+    .form-select:focus {
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 0.25rem rgba(255, 160, 0, 0.25);
+    }
+    
+    .checkout-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .checkout-btn:hover {
+        background: var(--dark-red) !important;
+        transform: translateY(-2px);
+    }
+    
+    .fw-500 {
+        font-weight: 500;
+    }
+    
+    .price-tag {
+        color: var(--primary-red);
+        font-weight: 600;
+    }
+    
+    .table > :not(caption) > * > * {
+        padding: 1rem;
+    }
+    
+    .table tbody tr {
+        transition: all 0.3s ease;
+    }
+    
+    .table tbody tr:hover {
+        background-color: var(--background-cream);
+    }
+</style>
+{% endblock %}

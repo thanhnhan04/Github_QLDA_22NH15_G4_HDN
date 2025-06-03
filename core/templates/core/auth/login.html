@@ -1,0 +1,106 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Đăng Nhập{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5 hero-section mb-4">
+    <div class="container">
+        <h1 class="display-4 text-center mb-4 text-white">Đăng Nhập</h1>
+        <p class="lead text-center mb-0 text-white-50">Đăng nhập để đặt món và theo dõi đơn hàng của bạn</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg rounded-3 border-0 hover-elevation">
+                <div class="card-header bg-white border-0 pt-4">
+                    <h3 class="text-center" style="color: var(--primary-red);">
+                        <i class="fas fa-user-circle fa-2x mb-3"></i><br>
+                        Đăng Nhập
+                    </h3>
+                </div>
+                <div class="card-body px-4 py-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="username" class="form-label">Tên đăng nhập</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fas fa-user text-muted"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0 ps-0" 
+                                       id="username" name="username" required 
+                                       placeholder="Nhập tên đăng nhập">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Mật khẩu</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fas fa-lock text-muted"></i>
+                                </span>
+                                <input type="password" class="form-control border-start-0 ps-0" 
+                                       id="password" name="password" required
+                                       placeholder="Nhập mật khẩu">
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-lg" 
+                                    style="background: var(--primary-red); color: white;">
+                                <i class="fas fa-sign-in-alt me-2"></i>Đăng Nhập
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light py-4 text-center border-0">
+                    <p class="mb-0">Chưa có tài khoản? 
+                        <a href="{% url 'register' %}" style="color: var(--primary-red);">
+                            Đăng ký ngay
+                            <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus, .input-group-text {
+        border-color: var(--primary-orange);
+        box-shadow: none;
+    }
+    
+    .input-group-text {
+        border-right: none;
+    }
+    
+    .form-control {
+        border-left: none;
+    }
+    
+    .form-control:focus + .input-group-text {
+        border-color: var(--primary-orange);
+    }
+    
+    .card {
+        transform: translateY(0);
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-10px);
+    }
+    
+    .btn:hover {
+        background: var(--dark-red) !important;
+        transform: translateY(-2px);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #555;
+    }
+</style>
+{% endblock %}

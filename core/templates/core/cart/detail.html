@@ -1,0 +1,164 @@
+{% extends 'core/base.html' %}
+{% load core_extras %}
+
+{% block title %}Giỏ Hàng{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5 hero-section mb-4">
+    <div class="container">
+        <h1 class="display-4 text-center mb-4 text-white">Giỏ Hàng Của Bạn</h1>
+        <p class="lead text-center mb-0 text-white-50">Xem lại món ăn trước khi đặt hàng</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-lg rounded-3 border-0">
+                <div class="card-header bg-white border-0">
+                    <h3 class="mb-0" style="color: var(--primary-red);">Giỏ Hàng</h3>
+                </div>
+                <div class="card-body">
+                    {% if cart.items.all %}
+                        {% for item in cart.items.all %}
+                        <div class="row mb-4 align-items-center product-row">
+                            <div class="col-2">
+                                <img src="{{ item.product_image_url }}" class="img-fluid rounded-3 shadow-sm" alt="{{ item.product_name }}"
+                                     onerror="this.src='https://via.placeholder.com/100?text=No+Image'">
+                            </div>
+                            <div class="col-4">
+                                <h5 class="mb-1 product-name">{{ item.product_name }}</h5>                                <p class="mb-0 price-tag">{{ item.price|format_price }}</p>
+                            </div>
+                            <div class="col-3">
+                                <form method="post" action="{% url 'cart_update_quantity' item.id %}" class="d-flex align-items-center">
+                                    {% csrf_token %}
+                                    <input type="number" name="quantity" value="{{ item.quantity }}" 
+                                           min="1" class="form-control quantity-input me-2" style="width: 70px"
+                                           onchange="this.form.submit()">
+                                </form>
+                            </div>
+                            <div class="col-2 text-end">
+                                <p class="mb-0 total-price">{{ item.price|multiply:item.quantity|format_price }}</p>
+                            </div>
+                            <div class="col-1 text-end">
+                                <a href="{% url 'cart_remove' item.id %}" class="text-danger remove-item" 
+                                   onclick="return confirm('Bạn có chắc muốn xóa món này?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% if not forloop.last %}
+                        <hr class="my-4">
+                        {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center mb-0">Giỏ hàng của bạn đang trống. <a href="{% url 'product_list' %}" class="text-decoration-none" style="color: var(--primary-red);">Tiếp tục mua sắm</a></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-lg rounded-3 border-0">
+                <div class="card-header border-0" style="background: var(--primary-red);">
+                    <h4 class="mb-0 text-white">Tổng Đơn Hàng</h4>
+                </div>
+                <div class="card-body">
+                    {% if cart.items.all %}                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Tạm tính</span>
+                        <strong>{{ cart_total|format_price }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Phí giao hàng</span>
+                        <strong>Miễn phí</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="h5">Tổng cộng</span>
+                        <strong class="h5" style="color: var(--primary-red);">{{ cart_total|format_price }}</strong>
+                    </div>
+                    <div class="d-grid gap-3">
+                        <a href="{% url 'order_create' %}" class="btn btn-lg checkout-btn" style="background: var(--primary-red); color: white;">
+                            <i class="fas fa-lock me-2"></i>Thanh Toán
+                        </a>
+                        <a href="{% url 'product_list' %}" class="btn btn-lg btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Tiếp Tục Mua Sắm
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-submit quantity form on change
+    document.querySelectorAll('input[name="quantity"]').forEach(input => {
+        input.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+</script>
+
+<style>
+    .hero-section {
+        background: linear-gradient(45deg, var(--primary-red), var(--primary-orange));
+        position: relative;
+    }
+    
+    .product-row {
+        transition: all 0.3s ease;
+    }
+    
+    .product-row:hover {
+        background-color: var(--background-cream);
+        border-radius: 8px;
+    }
+    
+    .product-name {
+        color: #333;
+        font-weight: 600;
+    }
+    
+    .price-tag {
+        color: var(--primary-red);
+        font-weight: 500;
+    }
+    
+    .quantity-input {
+        border: 2px solid #eee;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
+    
+    .quantity-input:focus {
+        border-color: var(--primary-orange);
+        box-shadow: none;
+    }
+    
+    .total-price {
+        color: var(--primary-red);
+        font-weight: 600;
+    }
+    
+    .remove-item {
+        opacity: 0.7;
+        transition: all 0.3s ease;
+    }
+    
+    .remove-item:hover {
+        opacity: 1;
+    }
+    
+    .checkout-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .checkout-btn:hover {
+        background: var(--dark-red) !important;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,221 @@
+{% extends 'core/base.html' %}
+{% load core_extras %}
+
+{% block title %}Thực đơn - Tasty Food{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5 hero-section mb-4">
+    <div class="container">
+        <h1 class="display-4 text-center mb-4 text-white">Thực Đơn Của Chúng Tôi</h1>
+        <p class="lead text-center mb-0 text-white-50">Khám phá những món ăn ngon, đa dạng và hấp dẫn</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card category-card shadow-sm sticky-md-top" style="top: 2rem; z-index: 1;">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list-ul me-2"></i>Danh Mục
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'product_list' %}" class="list-group-item list-group-item-action {% if not request.GET.category %}active{% endif %}">
+                        <i class="fas fa-utensils me-2"></i>Tất cả món
+                        <span class="float-end badge rounded-pill bg-light text-dark">{{ products|length }}</span>
+                    </a>
+                    {% for category in categories %}
+                    <a href="{% url 'product_list' %}?category={{ category.id }}" 
+                       class="list-group-item list-group-item-action {% if request.GET.category == category.id|stringformat:'s' %}active{% endif %}">
+                        {{ category.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% for product in products %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm hover-elevation product-card">
+                        <div class="position-relative product-image-container">
+                            <img src="{{ product.image_url }}" class="card-img-top product-image" alt="{{ product.name }}" 
+                                 onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
+                            <div class="position-absolute top-0 end-0 p-2">
+                                <span class="badge price-badge">{{ product.price|format_price }}</span>
+                            </div>
+                            <div class="product-overlay">
+                                <button type="button" class="btn btn-light btn-sm product-detail-btn" 
+                                        data-bs-toggle="modal" data-bs-target="#productModal{{ product.id }}">
+                                    <i class="fas fa-eye"></i> Xem chi tiết
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title product-title">{{ product.name }}</h5>
+                            <p class="card-text text-muted">{{ product.description|truncatewords:15 }}</p>
+                        </div>
+                        <div class="card-footer bg-white border-0 pb-3">
+                            {% if user.is_authenticated %}
+                                {% if user.role == 'admin' %}
+                                <div class="btn-group w-100">
+                                    <a href="{% url 'product_edit' product.id %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i> Sửa
+                                    </a>
+                                    <a href="{% url 'product_delete' product.id %}" class="btn btn-outline-danger" 
+                                       onclick="return confirm('Bạn có chắc muốn xóa món {{ product.name }}?')">
+                                        <i class="fas fa-trash"></i> Xóa
+                                    </a>
+                                </div>
+                                {% else %}
+                                <a href="{% url 'cart_add' product.id %}" class="btn btn-primary w-100 add-to-cart-btn">
+                                    <i class="fas fa-cart-plus me-2"></i>Thêm vào giỏ
+                                </a>
+                                {% endif %}
+                            {% else %}
+                            <a href="{% url 'login' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập để đặt món
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal for product details -->
+                <div class="modal fade" id="productModal{{ product.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content border-0">
+                            <div class="modal-header border-0">
+                                <h4 class="modal-title" style="color: var(--primary-red);">{{ product.name }}</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <img src="{{ product.image_url }}" class="img-fluid rounded-3 shadow" 
+                                             alt="{{ product.name }}"
+                                             onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h5 class="mb-3">Chi tiết món ăn</h5>
+                                        <p class="text-muted">{{ product.description }}</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="h5 mb-0">Giá:</span>
+                                            <span class="price-badge h5 mb-0">{{ product.price|format_price }}</span>
+                                        </div>
+                                        <hr class="my-4">
+                                        {% if user.is_authenticated and not user.role == 'admin' %}
+                                        <div class="d-grid">
+                                            <a href="{% url 'cart_add' product.id %}" class="btn btn-lg btn-primary add-to-cart-btn">
+                                                <i class="fas fa-cart-plus me-2"></i>Thêm vào giỏ
+                                            </a>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center py-5">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <h4>Không có món ăn nào trong danh mục này</h4>
+                        <p class="mb-0">Vui lòng thử danh mục khác hoặc quay lại sau.</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated and user.role == 'admin' %}
+<div class="fixed-bottom p-3">
+    <div class="container">
+        <a href="{% url 'product_create' %}" class="btn btn-success float-end">
+            <i class="fas fa-plus me-2"></i>Thêm món mới
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .product-card {
+        overflow: hidden;
+    }
+    
+    .product-image-container {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .product-image {
+        height: 200px;
+        object-fit: cover;
+        transition: all 0.5s ease;
+    }
+    
+    .product-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .product-card:hover .product-overlay {
+        opacity: 1;
+    }
+    
+    .product-card:hover .product-image {
+        transform: scale(1.1);
+    }
+    
+    .product-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+    
+    .price-badge {
+        background-color: var(--primary-red) !important;
+        color: white;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        border-radius: 20px;
+    }
+    
+    .add-to-cart-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .add-to-cart-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .modal-content {
+        border-radius: 15px;
+    }
+    
+    @media (max-width: 768px) {
+        .product-overlay {
+            opacity: 1;
+            background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%);
+            align-items: flex-end;
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
