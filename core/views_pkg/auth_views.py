@@ -52,8 +52,10 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            messages.success(request, 'Đăng nhập thành công!')
-            return redirect('home')
+            if user.is_staff:  # Kiểm tra nếu là admin
+                return redirect('admin_home')  # Chuyển hướng đến trang chủ admin
+            else:
+                return redirect('home')  # Chuyển hướng đến trang chủ người dùng
         else:
             messages.error(request, 'Tên đăng nhập hoặc mật khẩu không đúng.')
     return render(request, 'core/auth/login.html')
