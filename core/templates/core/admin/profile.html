@@ -1,48 +1,48 @@
-{% extends 'core/base.html' %}
+{% extends 'core/admin/admin_base.html' %}
+{% load static %}
 
-{% block title %}Thông Tin Cá Nhân{% endblock %}
-
-{% block content %}
+{% block admin_content %}
 <div class="container-fluid py-5 hero-section mb-4">
     <div class="container">
-        <h1 class="display-4 text-center mb-4 text-white">Thông Tin Cá Nhân</h1>
-        <p class="lead text-center mb-0 text-white-50">Cập nhật thông tin tài khoản của bạn</p>
+        <h1 class="display-4 text-center mb-4 text-white">Thông Tin Quản Trị Viên</h1>
+        <p class="lead text-center mb-0 text-white-50">Quản lý thông tin cá nhân của bạn</p>
     </div>
 </div>
 
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card shadow-lg rounded-3 border-0">
-                <div class="card-header bg-white border-0">
-                    <div class="d-flex align-items-center justify-content-center">
+            <div class="card shadow border-0">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex align-items-center">
                         <div class="avatar-circle me-3">
                             <i class="fas fa-user-circle fa-3x"></i>
                         </div>
-                        <h3 class="mb-0" style="color: var(--primary-red);">
-                            {{ user.get_full_name|default:user.username }}
-                            <span class="badge bg-secondary ms-2">Khách hàng</span>
-                        </h3>
+                        <div>
+                            <h4 class="mb-0" style="color: var(--primary-red);">{{ user.get_full_name|default:user.username }}</h4>
+                            <span class="badge bg-primary">Quản trị viên</span>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" class="needs-validation" novalidate>
                         {% csrf_token %}
-                        <div class="row mb-3">
+                        <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label for="username" class="form-label">
+                                <label class="form-label">
                                     <i class="fas fa-user me-2"></i>Tên đăng nhập
                                 </label>
-                                <input type="text" class="form-control" id="username" value="{{ user.username }}" readonly>
+                                <input type="text" class="form-control" value="{{ user.username }}" readonly>
                             </div>
                             <div class="col-md-6">
-                                <label for="email" class="form-label">
+                                <label class="form-label">
                                     <i class="fas fa-envelope me-2"></i>Email
                                 </label>
-                                <input type="email" class="form-control" id="email" value="{{ user.email }}" readonly>
+                                <input type="email" class="form-control" value="{{ user.email }}" readonly>
                             </div>
                         </div>
-                        <div class="row mb-3">
+
+                        <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label for="phone" class="form-label">
                                     <i class="fas fa-phone me-2"></i>Số điện thoại
@@ -50,18 +50,20 @@
                                 <input type="tel" class="form-control" id="phone" name="phone" value="{{ user.phone }}">
                             </div>
                             <div class="col-md-6">
-                                <label for="role" class="form-label">
-                                    <i class="fas fa-user-tag me-2"></i>Vai trò
+                                <label class="form-label">
+                                    <i class="fas fa-user-shield me-2"></i>Vai trò
                                 </label>
-                                <input type="text" class="form-control" id="role" value="Khách hàng" readonly>
+                                <input type="text" class="form-control" value="Quản trị viên" readonly>
                             </div>
                         </div>
+
                         <div class="mb-4">
                             <label for="address" class="form-label">
                                 <i class="fas fa-map-marker-alt me-2"></i>Địa chỉ
                             </label>
                             <textarea class="form-control" id="address" name="address" rows="3">{{ user.address }}</textarea>
                         </div>
+
                         {% if messages %}
                             {% for message in messages %}
                                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -70,9 +72,10 @@
                                 </div>
                             {% endfor %}
                         {% endif %}
+
                         <div class="d-grid">
                             <button type="submit" class="btn btn-lg" style="background: var(--primary-red); color: white;">
-                                <i class="fas fa-save me-2"></i>Cập Nhật
+                                <i class="fas fa-save me-2"></i>Cập Nhật Thông Tin
                             </button>
                         </div>
                     </form>
@@ -99,32 +102,50 @@
         color: var(--primary-red);
     }
 
+    .form-control {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+
     .form-control:focus {
         border-color: var(--primary-orange);
         box-shadow: 0 0 0 0.25rem rgba(255, 160, 0, 0.25);
     }
-    
+
     .form-control[readonly] {
         background-color: #f8f9fa;
+        border-color: #e9ecef;
+    }
+
+    .btn {
+        border-radius: 8px;
+        padding: 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 0.5em 1em;
     }
 
     .card {
-        transform: translateY(0);
-        transition: all 0.3s ease;
+        border-radius: 12px;
+        transition: transform 0.3s ease;
     }
 
     .card:hover {
         transform: translateY(-5px);
     }
 
-    .btn:hover {
-        opacity: 0.9;
-        transform: translateY(-2px);
-    }
-
-    .badge {
+    .form-label {
         font-weight: 500;
-        padding: 0.5em 1em;
+        color: #495057;
     }
 
     .form-label i {

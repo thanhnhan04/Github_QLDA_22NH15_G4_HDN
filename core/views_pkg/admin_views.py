@@ -4,6 +4,9 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db import models
+from django.db.models import Sum, Count, Q
+from django.utils import timezone
+from datetime import timedelta
 from ..models import Product, Category, Order, OrderItem, User
 
 @staff_member_required
@@ -157,7 +160,8 @@ def admin_order_update_status(request, pk):
 
 @staff_member_required
 def admin_customers(request):
-    customers = User.objects.filter(role='customer').order_by('-date_joined')
+    # Chỉ lấy các tài khoản customer, không lấy admin
+    customers = User.objects.exclude(role='admin').order_by('-date_joined')
     # Tìm kiếm
     search = request.GET.get('search', '').strip()
     if search:
@@ -215,3 +219,60 @@ def admin_customer_detail(request, pk):
     user = get_object_or_404(User, pk=pk, role='customer')
     orders = user.orders.all().order_by('-created_at')  # Sử dụng related_name='orders' từ model Order
     return render(request, 'core/admin/admin_customer_detail.html', {'customer': user, 'orders': orders})
+
+@staff_member_required
+def admin_statistics(request):
+    # Basic statistics
+    total_products = Product.objects.count()
+    total_orders = Order.objects.count()
+    total_revenue = Order.objects.filter(status='delivered').aggregate(
+        total=Sum('total')
+    )['total'] or 0    # Đếm số lượng tài khoản không phải admin
+    total_users = User.objects.exclude(role='admin').count()
+
+    # Orders by status with translated labels
+    orders_by_status = Order.objects.values('status').annotate(
+        count=Count('id')
+    ).order_by('status')
+    
+    # Recent orders
+    recent_orders = Order.objects.all().order_by('-created_at')[:10]
+    
+    # Top selling products - count items from delivered orders only
+    top_products = Product.objects.annotate(
+        sold=Count('orderitem', filter=Q(orderitem__order__status='delivered'))
+    ).filter(sold__gt=0).order_by('-sold')[:5]
+    
+    # Daily sales data for the last 7 days
+    today = timezone.now()
+    last_week = today - timedelta(days=7)
+    daily_sales = Order.objects.filter(
+        created_at__gte=last_week,
+        status='delivered'
+    ).values('created_at__date').annotate(
+        total=Sum('total')
+    ).order_by('created_at__date')
+    
+    # Sales over time (last 7 days)
+    today = timezone.now()
+    last_week = today - timedelta(days=7)
+    daily_sales = Order.objects.filter(
+        created_at__gte=last_week,
+        status='delivered'
+    ).values('created_at__date').annotate(
+        total=Sum('total')
+    ).order_by('created_at__date')
+    
+    context = {
+        'total_products': total_products,
+        'total_orders': total_orders,
+        'total_revenue': total_revenue,
+        'total_users': total_users,
+        'orders_by_status': orders_by_status,
+        'recent_orders': recent_orders,
+        'top_products': top_products,
+        'daily_sales': daily_sales,
+        'is_admin_page': True,
+    }
+    
+    return render(request, 'core/admin/statistics.html', context)

@@ -51,21 +51,22 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'admin_customers' %}active{% endif %}" href="{% url 'admin_customers' %}"><i class="fas fa-users me-1"></i> Quản lý khách hàng</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled" href="#"><i class="fas fa-chart-bar me-1"></i> Thống kê</a>
+                </li>                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'admin_statistics' %}active{% endif %}" href="{% url 'admin_statistics' %}"><i class="fas fa-chart-bar me-1"></i> Thống kê</a>
                 </li>
             </ul>
-            <ul class="navbar-nav align-items-center">
-                <li class="nav-item me-2">
-                    <!-- <span class="nav-link disabled" style="font-weight:600; color:#fff; opacity:1;">
+            <ul class="navbar-nav align-items-center">      
+                <li class="nav-item">
+                    <a class="nav-link {% if 'profile' in request.path %}active{% endif %}" href="{% url 'profile' %}"><i class="fas fa-user me-1"></i> Hồ sơ</a>
+                </li>
+                          <li class="nav-item me-2">
+
+                    <span class="nav-link" style="font-weight:600; color:#fff; opacity:1;">
                         <i class="fas fa-user-circle me-1"></i>
                         Xin chào, {{ request.user.get_full_name|default:request.user.username }}
-                    </span> -->
+                    </span>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled" href="#"><i class="fas fa-user me-1"></i> Hồ sơ</a>
-                </li>
+                
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-1"></i> Đăng xuất</a>
                 </li>

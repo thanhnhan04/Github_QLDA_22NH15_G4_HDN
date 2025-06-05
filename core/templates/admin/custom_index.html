@@ -1,0 +1,103 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stats-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .stats-card h3 { margin-top: 0; color: #666; font-size: 1rem; }
+    .stats-value { font-size: 1.5rem; font-weight: bold; color: #333; }
+    .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.875rem; margin-bottom: 0.5rem; color: white; }
+    .status-pending { background-color: #ffa500; }
+    .status-processing { background-color: #007bff; }
+    .status-delivered { background-color: #28a745; }
+    .status-cancelled { background-color: #dc3545; }
+    .top-products { margin-top: 2rem; }
+    .top-products h3 { margin-bottom: 1rem; }
+    .top-products-list { list-style: none; padding: 0; }
+    .top-products-list li { padding: 0.5rem 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .top-products-list li:last-child { border-bottom: none; }
+    .admin-profile { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+    .admin-profile h2 { margin-top: 0; color: #333; }
+    .admin-info { display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: center; margin-top: 1rem; }
+    .admin-info dt { font-weight: bold; color: #666; }
+    .admin-info dd { margin: 0; }
+    .button { display: inline-block; padding: 0.5rem 1rem; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; transition: background-color 0.2s; }
+    .button:hover { background-color: #0056b3; color: white; text-decoration: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <!-- Admin Profile Section -->
+    <div class="admin-profile">
+        <h2>Hồ sơ quản trị viên</h2>
+        <div class="admin-info">
+            <dt>Tên đăng nhập:</dt>
+            <dd>{{ request.user.username }}</dd>
+            <dt>Email:</dt>
+            <dd>{{ request.user.email }}</dd>
+            <dt>Vai trò:</dt>
+            <dd>{{ request.user.get_role_display }}</dd>
+            <dt>Ngày tham gia:</dt>
+            <dd>{{ request.user.date_joined|date:"d/m/Y" }}</dd>
+        </div>
+        <div style="margin-top: 1rem;">
+            <a href="{% url 'admin:core_user_change' request.user.pk %}" class="button">
+                Chỉnh sửa hồ sơ
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="stats-container">
+        <!-- Total Revenue -->
+        <div class="stats-card">
+            <h3>Tổng doanh thu</h3>
+            <div class="stats-value">{{ total_revenue|floatformat:0 }} VNĐ</div>
+        </div>
+
+        <!-- Total Products -->
+        <div class="stats-card">
+            <h3>Sản phẩm đang bán</h3>
+            <div class="stats-value">{{ total_products }}</div>
+        </div>
+
+        <!-- Orders by Status -->
+        <div class="stats-card">
+            <h3>Trạng thái đơn hàng</h3>
+            {% for status in orders_by_status %}
+            <div>
+                <span class="status-badge status-{{ status.status }}">
+                    {% if status.status == 'pending' %}Chờ xử lý
+                    {% elif status.status == 'processing' %}Đang xử lý
+                    {% elif status.status == 'delivered' %}Đã giao
+                    {% else %}Đã hủy{% endif %}
+                </span>
+                <span class="stats-value" style="font-size: 1rem;">
+                    {{ status.count }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Top Products Section -->
+    <div class="stats-card top-products">
+        <h3>Top 5 sản phẩm bán chạy</h3>
+        <ul class="top-products-list">
+            {% for product in top_products %}
+            <li>
+                <span>{{ product.product_name }}</span>
+                <span style="font-weight: bold;">Đã bán: {{ product.sold }}</span>
+            </li>
+            {% empty %}
+            <li>Chưa có sản phẩm nào được bán</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    {{ block.super }}
+</div>
+{% endblock %}

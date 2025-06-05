@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class User(AbstractUser):
     ROLE_CHOICES = (
@@ -17,6 +19,12 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+@receiver(post_save, sender=User)
+def set_admin_role(sender, instance, created, **kwargs):
+    if instance.is_superuser and instance.role != 'admin':
+        instance.role = 'admin'
+        instance.save()
 
 class Category(models.Model):
     name = models.CharField(max_length=100)

@@ -29,6 +29,7 @@ class UserRegistrationForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
+        user.role = 'customer'  # Đảm bảo user đăng ký mới luôn có role là customer
         if commit:
             user.save()
         return user
@@ -52,7 +53,7 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            if user.is_staff:  # Kiểm tra nếu là admin
+            if user.role == 'admin':  # Kiểm tra role admin
                 return redirect('admin_home')  # Chuyển hướng đến trang chủ admin
             else:
                 return redirect('home')  # Chuyển hướng đến trang chủ người dùng
@@ -75,4 +76,11 @@ def profile(request):
         user.save()
         messages.success(request, 'Cập nhật thông tin thành công!')
         return redirect('profile')
-    return render(request, 'core/auth/profile.html')
+    
+    # Use admin template for admin users
+    if request.user.role == 'admin':
+        template = 'core/admin/profile.html'
+    else:
+        template = 'core/auth/profile.html'
+    
+    return render(request, template)
