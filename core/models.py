@@ -114,3 +114,28 @@ class CartItem(models.Model):
 
     class Meta:
         unique_together = ('cart', 'product')
+
+class Promotion(models.Model):
+    code = models.CharField(max_length=50, unique=True)
+    description = models.CharField(max_length=255, blank=True)
+    discount_percent = models.PositiveIntegerField(null=True, blank=True)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    min_order_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.code
+
+class OrderReview(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='review')
+    customer = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.PositiveSmallIntegerField(choices=[(i, str(i)) for i in range(1, 6)])
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Review for Order #{self.order.id} by {self.customer.username}'

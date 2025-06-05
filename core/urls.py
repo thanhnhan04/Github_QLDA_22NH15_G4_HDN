@@ -3,8 +3,8 @@ from .views import admin_home  # Import admin_home từ core/views.py
 from .views_pkg.auth_views import user_login, user_logout, register, profile  # Import từ core/views_pkg/auth_views.py
 from .views_pkg.product_views import product_list, product_create, product_edit, product_delete  # Import từ core/views_pkg/product_views.py
 from .views_pkg.cart_views import cart_detail, cart_add, cart_remove, cart_update_quantity  # Import từ core/views_pkg/cart_views.py
-from .views_pkg.order_views import order_create, order_list, order_detail  # Import từ core/views_pkg/order_views.py
-from .views_pkg.admin_views import admin_products, admin_product_add, admin_product_edit, admin_product_delete, admin_product_toggle, admin_order_detail, admin_order_list, admin_order_update_status, admin_customers, admin_customer_toggle, admin_customer_detail, admin_statistics  # Import thêm các view mới
+from .views_pkg.order_views import order_create, order_list, order_detail, order_confirm, ajax_promotion_calculate  # Import từ core/views_pkg/order_views.py
+from .views_pkg.admin_views import admin_products, admin_product_add, admin_product_edit, admin_product_delete, admin_product_toggle, admin_order_detail, admin_order_list, admin_order_update_status, admin_customers, admin_customer_toggle, admin_customer_detail, admin_statistics, admin_promotions, admin_promotion_add, admin_promotion_edit, admin_promotion_delete  # Import thêm các view mới
 
 urlpatterns = [
     # Authentication URLs
@@ -30,6 +30,7 @@ urlpatterns = [
     path('orders/create/', order_create, name='order_create'),
     path('orders/', order_list, name='order_list'),
     path('orders/<int:pk>/', order_detail, name='order_detail'),
+    path('orders/confirm/', order_confirm, name='order_confirm'),
 
     # Custom Admin Order Management
     path('admin-panel/orders/', admin_order_list, name='admin_order_list'),
@@ -52,4 +53,13 @@ urlpatterns = [
     path('admin_customers/', admin_customers, name='admin_customers'),
     path('admin_customers/<int:pk>/toggle/', admin_customer_toggle, name='admin_customer_toggle'),
     path('admin_customers/<int:pk>/detail/', admin_customer_detail, name='admin_customer_detail'),
+
+    # Admin Promotion Management
+    path('admin-promotions/', admin_promotions, name='admin_promotions'),
+    path('admin-promotions/add/', admin_promotion_add, name='admin_promotion_add'),
+    path('admin-promotions/<int:pk>/edit/', admin_promotion_edit, name='admin_promotion_edit'),
+    path('admin-promotions/<int:pk>/delete/', admin_promotion_delete, name='admin_promotion_delete'),
+
+    # Ajax URLs
+    path('ajax/promotion-calculate/', ajax_promotion_calculate, name='ajax_promotion_calculate'),
 ]

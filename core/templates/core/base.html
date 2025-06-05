@@ -357,54 +357,40 @@ Chỉ kiểm tra biến is_admin_page để hiển thị menu admin, không ki�
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
+            <ul class="navbar-nav mx-auto w-100 justify-content-center">
+                <li class="nav-item flex-fill text-center">
                     <a class="nav-link" href="{% url 'product_list' %}">
                         <i class="fas fa-book-open me-1"></i> Thực đơn
                     </a>
                 </li>
-                {% if user.is_authenticated and user.role == 'admin' %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'product_create' %}">
-                        <i class="fas fa-plus-circle me-1"></i> Thêm món
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'admin_order_list' %}">
-                        <i class="fas fa-tasks me-1"></i> Quản lý đơn hàng
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-            <ul class="navbar-nav">
                 {% if user.is_authenticated %}
-                <li class="nav-item">
+                <li class="nav-item flex-fill text-center">
                     <a class="nav-link" href="{% url 'cart_detail' %}">
                         <i class="fas fa-shopping-cart me-1"></i> Giỏ hàng
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item flex-fill text-center">
                     <a class="nav-link" href="{% url 'order_list' %}">
                         <i class="fas fa-clipboard-list me-1"></i> Đơn hàng
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item flex-fill text-center">
                     <a class="nav-link" href="{% url 'profile' %}">
                         <i class="fas fa-user me-1"></i> Hồ sơ
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item flex-fill text-center">
                     <a class="nav-link" href="{% url 'logout' %}">
                         <i class="fas fa-sign-out-alt me-1"></i> Đăng xuất
                     </a>
                 </li>
                 {% else %}
-                <li class="nav-item">
+                <li class="nav-item flex-fill text-center">
                     <a class="nav-link" href="{% url 'login' %}">
                         <i class="fas fa-sign-in-alt me-1"></i> Đăng nhập
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item flex-fill text-center">
                     <a class="nav-link" href="{% url 'register' %}">
                         <i class="fas fa-user-plus me-1"></i> Đăng ký
                     </a>

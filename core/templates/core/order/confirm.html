@@ -1,0 +1,79 @@
+{% extends 'core/base.html' %}
+{% load core_extras %}
+
+{% block title %}Xác Nhận Đơn Hàng{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-white border-0">
+                    <h2 class="mb-0" style="color: var(--primary-red);">Xác Nhận Đơn Hàng</h2>
+                </div>
+                <div class="card-body">
+                    <h4 class="mb-3">Thông Tin Khách Hàng</h4>
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item"><strong>Họ tên:</strong> {{ user.get_full_name|default:user.username }}</li>
+                        <li class="list-group-item"><strong>Số điện thoại:</strong> {{ user.phone }}</li>
+                        <li class="list-group-item"><strong>Địa chỉ:</strong> {{ user.address }}</li>
+                    </ul>
+                    <h4 class="mb-3">Thông Tin Đơn Hàng</h4>
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item"><strong>Phương thức thanh toán:</strong> 
+                            {% if payment_method == 'cash' %}Tiền mặt
+                            {% elif payment_method == 'card' %}Thẻ
+                            {% elif payment_method == 'bank' %}Chuyển khoản
+                            {% else %}{{ payment_method|default:'-' }}{% endif %}
+                        </li>
+                        <li class="list-group-item"><strong>Ghi chú:</strong> {{ note|default:'-' }}</li>
+                    </ul>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Món ăn</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart.items.all %}
+                            <tr>
+                                <td>{{ item.product_name }}</td>
+                                <td class="text-center">{{ item.quantity }}</td>
+                                <td class="text-end">{{ item.price|format_price }}</td>
+                                <td class="text-end">{{ item.price|multiply:item.quantity|format_price }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Tổng tiền hàng</span>
+                            <strong>{{ total|format_price }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Giảm giá</span>
+                            <strong>-{{ discount|floatformat:0|format_price }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Tổng thanh toán</span>
+                            <strong>{{ final_total|format_price }}</strong>
+                        </div>
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="payment_method" value="{{ payment_method }}">
+                        <input type="hidden" name="note" value="{{ note }}">
+                        <input type="hidden" name="promo_code" value="{{ promo_code }}">
+                        <input type="hidden" name="confirm" value="1">
+                        <button type="submit" class="btn btn-lg btn-success w-100">Xác Nhận Đặt Hàng</button>
+                        <a href="{% url 'order_create' %}" class="btn btn-lg btn-outline-secondary w-100 mt-2">Quay lại chỉnh sửa</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

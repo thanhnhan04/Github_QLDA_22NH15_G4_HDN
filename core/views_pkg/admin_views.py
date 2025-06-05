@@ -8,6 +8,7 @@ from django.db.models import Sum, Count, Q
 from django.utils import timezone
 from datetime import timedelta
 from ..models import Product, Category, Order, OrderItem, User
+from ..models import Promotion, OrderReview
 
 @staff_member_required
 def admin_products(request):
@@ -144,7 +145,12 @@ def admin_order_list(request):
 def admin_order_detail(request, pk):
     order = get_object_or_404(Order, pk=pk)
     order_items = OrderItem.objects.filter(order=order)
-    context = {'order': order, 'order_items': order_items}
+    review = None
+    try:
+        review = order.review
+    except OrderReview.DoesNotExist:
+        review = None
+    context = {'order': order, 'order_items': order_items, 'review': review}
     return render(request, 'core/Admin/admin_order_detail.html', context)
 
 @staff_member_required
@@ -276,3 +282,45 @@ def admin_statistics(request):
     }
     
     return render(request, 'core/admin/statistics.html', context)
+
+@staff_member_required
+def admin_promotions(request):
+    promotions = Promotion.objects.all().order_by('-created_at')
+    now = timezone.now()
+    return render(request, 'core/admin/admin_promotions.html', {'promotions': promotions, 'is_admin_page': True, 'now': now})
+
+@staff_member_required
+def admin_promotion_add(request):
+    from ..forms import PromotionForm
+    if request.method == 'POST':
+        form = PromotionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Đã thêm khuyến mãi mới!')
+            return redirect('admin_promotions')
+    else:
+        form = PromotionForm()
+    return render(request, 'core/admin/promotion_form.html', {'form': form, 'action': 'add', 'is_admin_page': True})
+
+@staff_member_required
+def admin_promotion_edit(request, pk):
+    from ..forms import PromotionForm
+    promo = get_object_or_404(Promotion, pk=pk)
+    if request.method == 'POST':
+        form = PromotionForm(request.POST, instance=promo)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Đã cập nhật khuyến mãi!')
+            return redirect('admin_promotions')
+    else:
+        form = PromotionForm(instance=promo)
+    return render(request, 'core/admin/promotion_form.html', {'form': form, 'action': 'edit', 'is_admin_page': True})
+
+@staff_member_required
+def admin_promotion_delete(request, pk):
+    promo = get_object_or_404(Promotion, pk=pk)
+    if request.method == 'POST':
+        promo.delete()
+        messages.success(request, 'Đã xóa khuyến mãi!')
+        return redirect('admin_promotions')
+    return render(request, 'core/admin/promotion_form.html', {'promo': promo, 'action': 'delete', 'is_admin_page': True})

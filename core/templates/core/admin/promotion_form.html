@@ -1,0 +1,19 @@
+{% extends 'core/admin/admin_base.html' %}
+{% block title %}{% if action == 'add' %}Thêm Khuyến Mãi{% elif action == 'edit' %}Sửa Khuyến Mãi{% else %}Xóa Khuyến Mãi{% endif %}{% endblock %}
+{% block admin_content %}
+<div class="container py-5">
+    <div class="card shadow border-0 mx-auto" style="max-width: 600px;">
+        <div class="card-body">
+            <h3 class="mb-4">{% if action == 'add' %}Thêm Khuyến Mãi{% elif action == 'edit' %}Sửa Khuyến Mãi{% else %}Xóa Khuyến Mãi{% endif %}</h3>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'admin_promotions' %}" class="btn btn-secondary">Quay lại</a>
+                    <button type="submit" class="btn btn-primary">{% if action == 'add' %}Thêm{% elif action == 'edit' %}Lưu{% else %}Xóa{% endif %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -103,6 +103,36 @@
                 </div>
             </div>
 
+            {% if user.role == 'customer' and order.status == 'delivered' %}
+            <div class="card shadow-lg rounded-3 border-0 mb-4">
+                <div class="card-header border-0 bg-success">
+                    <h4 class="mb-0 text-white">Đánh Giá Đơn Hàng</h4>
+                </div>
+                <div class="card-body">
+                    {% if review %}
+                        <div class="mb-2">
+                            <strong>Đánh giá:</strong>
+                            <span class="text-warning">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star"></i>{% endif %}
+                                {% endfor %}
+                            </span>
+                        </div>
+                        {% if review.comment %}
+                        <div class="mb-2"><strong>Nhận xét:</strong> {{ review.comment }}</div>
+                        {% endif %}
+                        <div class="text-muted small">Đánh giá lúc {{ review.created_at|date:"d/m/Y H:i" }}</div>
+                    {% elif can_review %}
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ review_form.as_p }}
+                            <button type="submit" name="review_submit" class="btn btn-primary mt-2">Gửi đánh giá</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
             {% if user.role == 'admin' %}
             <div class="card shadow-lg rounded-3 border-0">
                 <div class="card-header border-0" style="background: var(--primary-orange);">

@@ -61,7 +61,7 @@
                     <h3 class="mb-0 text-white">Thông Tin Thanh Toán</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" action="{% url 'order_confirm' %}">
                         {% csrf_token %}
                         <div class="mb-4">
                             <label class="form-label">Phương thức thanh toán</label>
@@ -78,8 +78,33 @@
                         </div>
                         <div class="mb-4">
                             <label class="form-label">Ghi chú</label>
-                            <textarea name="note" class="form-control" rows="3" 
-                                      placeholder="Hướng dẫn đặc biệt cho việc giao hàng"></textarea>
+                            <textarea name="note" class="form-control" rows="3" placeholder="Hướng dẫn đặc biệt cho việc giao hàng"></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Mã khuyến mãi</label>
+                            <div class="input-group">
+                                <select class="form-select" name="promo_code" required>
+                                    <option value="">-- Chọn mã khuyến mãi --</option>
+                                    {% for promo in available_promotions %}
+                                        {% if total >= promo.min_order_total %}
+                                        <option value="{{ promo.code }}" {% if promo_code == promo.code %}selected{% endif %}>
+                                            {{ promo.code }} - {{ promo.description }} {% if promo.discount_percent %}-{{ promo.discount_percent }}%{% elif promo.discount_amount %}-{{ promo.discount_amount|format_price }}{% endif %} (Tối thiểu {{ promo.min_order_total|format_price }})
+                                            {% if promo.start_date > now %} [Sắp diễn ra]{% endif %}
+                                        </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% if promo_error %}
+                                <div class="text-danger mt-1 small">{{ promo_error }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Tổng tiền hàng</span>
+                                <strong id="cart-total">{{ total|format_price }}</strong>
+                            </div>
+                            <div id="promo-error" class="text-danger mt-1 small" {% if not promo_error %}style="display:none;"{% endif %}>{{ promo_error }}</div>
                         </div>
                         <div class="d-grid gap-3">
                             <button type="submit" class="btn btn-lg checkout-btn" style="background: var(--primary-red); color: white;">
@@ -137,4 +162,73 @@
         background-color: var(--background-cream);
     }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updatePromotion() {
+    var promoCode = document.getElementsByName('promo_code')[0].value;
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    fetch('{% url "ajax_promotion_calculate" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: 'promo_code=' + encodeURIComponent(promoCode)
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('cart-total').innerText = data.cart_total.toLocaleString('vi-VN') + ' VNĐ';
+        var discountEl = document.getElementById('discount');
+        if (discountEl) discountEl.innerText = '-' + data.discount.toLocaleString('vi-VN') + ' VNĐ';
+        var finalTotalEl = document.getElementById('final-total');
+        if (finalTotalEl) finalTotalEl.innerText = data.final_total.toLocaleString('vi-VN') + ' VNĐ';
+        var promoError = document.getElementById('promo-error');
+        if (data.promo_error) {
+            promoError.innerText = data.promo_error;
+            promoError.style.display = 'block';
+        } else {
+            promoError.innerText = '';
+            promoError.style.display = 'none';
+        }
+    });
+}
+document.addEventListener('DOMContentLoaded', function() {
+    var promoSelect = document.getElementsByName('promo_code_select')[0];
+    var promoInput = document.getElementsByName('promo_code')[0];
+    if (promoSelect) {
+        promoSelect.addEventListener('change', function() {
+            if (promoInput) {
+                // Fix: clear input first, then set value, then trigger input event and focus
+                promoInput.value = '';
+                setTimeout(function() {
+                    promoInput.value = promoSelect.value;
+                    promoInput.dispatchEvent(new Event('input'));
+                    promoInput.focus();
+                }, 0);
+            }
+        });
+    }
+    if (promoInput) {
+        promoInput.addEventListener('input', function() {
+            if (promoSelect) {
+                let found = false;
+                for (var i = 0; i < promoSelect.options.length; i++) {
+                    if (promoSelect.options[i].value === promoInput.value) {
+                        promoSelect.selectedIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) promoSelect.selectedIndex = 0;
+            }
+            if (typeof updatePromotion === 'function') updatePromotion();
+        });
+    }
+    if (promoInput && promoInput.value) {
+        if (typeof updatePromotion === 'function') updatePromotion();
+    }
+});
+</script>
 {% endblock %}
