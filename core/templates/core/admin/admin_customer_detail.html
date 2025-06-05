@@ -1,0 +1,76 @@
+{% extends 'core/admin/admin_base.html' %}
+{% load core_extras %}
+{% block title %}Chi Tiết Khách Hàng{% endblock %}
+{% block admin_content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-white border-0">
+                    <h4 class="mb-0" style="color: var(--primary-red);">Thông Tin Khách Hàng</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Họ tên:</strong> {{ customer.full_name|default:customer.username }}</p>
+                    <p><strong>Email:</strong> {{ customer.email }}</p>
+                    <p><strong>Số điện thoại:</strong> {{ customer.phone|default:'-' }}</p>
+                    <p><strong>Ngày đăng ký:</strong> {{ customer.date_joined|date:'d/m/Y H:i' }}</p>
+                    <p><strong>Trạng thái:</strong>
+                        {% if customer.is_active %}
+                            <span class="badge bg-success">Hoạt động</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Đã khóa</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 d-flex align-items-center justify-content-center">
+            <form method="post" action="{% url 'admin_customer_toggle' customer.id %}">
+                {% csrf_token %}
+                {% if customer.is_active %}
+                <button type="submit" class="btn btn-danger btn-lg rounded-pill"><i class="fas fa-user-slash"></i> Chặn khách hàng</button>
+                {% else %}
+                <button type="submit" class="btn btn-success btn-lg rounded-pill"><i class="fas fa-user-check"></i> Mở khóa khách hàng</button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    <div class="card shadow border-0">
+        <div class="card-header bg-white border-0">
+            <h4 class="mb-0" style="color: var(--primary-red);">Lịch Sử Đơn Hàng</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Mã đơn</th>
+                            <th>Ngày đặt</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.created_at|date:'d/m/Y H:i' }}</td>
+                            <td>{{ order.total|format_price }}</td>
+                            <td>
+                                <span class="badge {% if order.status == 'completed' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center">Chưa có đơn hàng nào.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

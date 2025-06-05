@@ -1,9 +1,7 @@
-{% extends 'core/base.html' %}
+{% extends 'core/admin/admin_base.html' %}
 {% load core_extras %}
-
 {% block title %}Quản Lý Đơn Hàng{% endblock %}
-
-{% block content %}
+{% block admin_content %}
 <div class="container-fluid py-5 hero-section mb-4">
     <div class="container">
         <h1 class="display-4 text-center mb-4 text-white">Quản Lý Đơn Hàng</h1>
@@ -20,6 +18,20 @@
                 <span class="badge bg-primary">{{ orders|length }} đơn hàng</span>
                 {% endif %}
             </div>
+            <!-- Filter by status -->
+            <form method="get" class="row g-2 mt-3">
+                <div class="col-auto">
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">Tất cả trạng thái</option>
+                        {% for value, label in orders.0.STATUS_CHOICES %}
+                        <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Lọc</button>
+                </div>
+            </form>
         </div>
         <div class="card-body">
             {% if orders %}
@@ -39,58 +51,55 @@
                     </thead>
                     <tbody>
                         {% for order in orders %}
-                        <tr class="order-row">
-                            <td class="fw-bold">#{{ order.id }}</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-user-circle fa-lg me-2 text-muted"></i>
-                                    <div>
-                                        <div>{{ order.customer.username }}</div>
-                                        <small class="text-muted">{{ order.customer.phone }}</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <small class="text-muted">
-                                    {% for item in order.items.all %}
-                                    {{ item.quantity }}x {{ item.product_name }}{% if not forloop.last %}, {% endif %}
-                                    {% endfor %}
-                                </small>
-                            </td>
-                            <td class="text-end price-tag">{{ order.total|format_price }}</td>
-                            <td>
-                                <form method="post" action="{% url 'admin_order_update_status' order.id %}" 
-                                      class="d-flex align-items-center">
-                                    {% csrf_token %}
-                                    <select name="status" class="form-select form-select-sm status-select" 
-                                            onchange="this.form.submit()">
-                                        {% for status, label in order.STATUS_CHOICES %}
-                                        <option value="{{ status }}" {% if order.status == status %}selected{% endif %}
-                                                class="status-option-{{ status }}">
-                                            {% if status == 'pending' %}Chờ xử lý
-                                            {% elif status == 'processing' %}Đang xử lý
-                                            {% elif status == 'delivered' %}Đã giao
-                                            {% else %}Đã hủy{% endif %}
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </form>
-                            </td>
-                            <td>
-                                {% if order.payment_method == 'cash' %}
-                                    <i class="fas fa-money-bill-wave me-2 text-success"></i>Tiền mặt
-                                {% elif order.payment_method == 'card' %}
-                                    <i class="fas fa-credit-card me-2 text-primary"></i>Thẻ
-                                {% else %}
-                                    <i class="fas fa-exchange-alt me-2 text-info"></i>Chuyển khoản
-                                {% endif %}
-                            </td>
-                            <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
-                            <td>
-                                <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
-                                    <i class="fas fa-eye me-1"></i>Chi tiết
-                                </a>
-                            </td>
+                        <tr class="order-row align-middle">
+    <td class="fw-bold">#{{ order.id }}</td>
+    <td>
+        <div class="d-flex align-items-center">
+            <i class="fas fa-user-circle fa-lg me-2 text-muted"></i>
+            <div>
+                <div>{{ order.customer.username }}</div>
+                <small class="text-muted">{{ order.customer.phone }}</small>
+            </div>
+        </div>
+    </td>
+    <td>
+        <small class="text-muted">
+            {% for item in order.items.all %}
+            {{ item.quantity }}x {{ item.product_name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </small>
+    </td>
+    <td class="text-end price-tag">{{ order.total|format_price }}</td>
+    <td>
+        <form method="post" action="{% url 'admin_order_update_status' order.id %}" class="d-flex align-items-center">
+            {% csrf_token %}
+            <select name="status" class="form-select form-select-sm status-select" onchange="this.form.submit()">
+                {% for status, label in order.STATUS_CHOICES %}
+                <option value="{{ status }}" {% if order.status == status %}selected{% endif %} class="status-option-{{ status }}">
+                    {% if status == 'pending' %}Chờ xử lý
+                    {% elif status == 'processing' %}Đang xử lý
+                    {% elif status == 'delivered' %}Đã giao
+                    {% else %}Đã hủy{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+    </td>
+    <td>
+        {% if order.payment_method == 'cash' %}
+            <i class="fas fa-money-bill-wave me-2 text-success"></i>Tiền mặt
+        {% elif order.payment_method == 'card' %}
+            <i class="fas fa-credit-card me-2 text-primary"></i>Thẻ
+        {% else %}
+            <i class="fas fa-exchange-alt me-2 text-info"></i>Chuyển khoản
+        {% endif %}
+    </td>
+    <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
+    <td class="text-end">
+        <a href="{% url 'admin_order_detail' order.id %}" class="btn btn-sm btn-outline-warning rounded-pill d-inline-flex align-items-center" style="font-weight: 500;">
+            <i class="fas fa-eye me-1"></i> Chi tiết
+        </a>
+    </td>
                         </tr>
                         {% endfor %}
                     </tbody>

@@ -3,7 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.http import JsonResponse
-from ..models import Product, Category, Order, OrderItem
+from django.db import models
+from ..models import Product, Category, Order, OrderItem, User
 
 @staff_member_required
 def admin_products(request):
@@ -22,7 +23,19 @@ def admin_products(request):
     paginator = Paginator(products, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    context = {'products': page_obj, 'categories': categories}
+    total_products = Product.objects.count()
+
+    # Thông báo đơn hàng mới và đơn hàng vừa giao
+    from ..models import Order
+    new_orders = Order.objects.filter(status='pending').order_by('-created_at')[:5]
+    delivered_orders = Order.objects.filter(status='delivered').order_by('-updated_at')[:5]
+    admin_notifications = []
+    for order in new_orders:
+        admin_notifications.append(f"Đơn hàng #{order.id} vừa được đặt bởi {order.customer.username}.")
+    for order in delivered_orders:
+        admin_notifications.append(f"Đơn hàng #{order.id} đã giao thành công.")
+
+    context = {'products': page_obj, 'categories': categories, 'is_admin_page': True, 'total_products': total_products, 'admin_notifications': admin_notifications}
     return render(request, 'core/Admin/admin_products.html', context)
 
 @staff_member_required
@@ -54,6 +67,18 @@ def admin_product_add(request):
 def admin_product_edit(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
+        # Nếu chỉ upload ảnh từ form nhanh trên bảng
+        if 'image_url' in request.FILES:
+            # Xử lý upload file ảnh
+            image_file = request.FILES['image_url']
+            # Nếu model Product có trường image, lưu file vào đó
+            if hasattr(product, 'image'):
+                product.image = image_file
+                # Nếu muốn lấy url, cần xử lý lưu file và lấy url nếu cần
+            product.save()
+            messages.success(request, f'Đã thêm ảnh cho sản phẩm "{product.name}".')
+            return redirect('admin_products')
+        # ...existing code...
         product.name = request.POST['name']
         product.price = request.POST['price']
         product.description = request.POST.get('description', '')
@@ -99,7 +124,17 @@ def admin_order_list(request):
     status_filter = request.GET.get('status', '')
     if status_filter:
         orders = orders.filter(status=status_filter)
-    context = {'orders': orders}
+
+    # Thông báo đơn hàng mới và đơn hàng vừa giao
+    new_orders = Order.objects.filter(status='pending').order_by('-created_at')[:5]
+    delivered_orders = Order.objects.filter(status='delivered').order_by('-updated_at')[:5]
+    admin_notifications = []
+    for order in new_orders:
+        admin_notifications.append(f"Đơn hàng #{order.id} vừa được đặt bởi {order.customer.username}.")
+    for order in delivered_orders:
+        admin_notifications.append(f"Đơn hàng #{order.id} đã giao thành công.")
+
+    context = {'orders': orders, 'status_filter': status_filter, 'is_admin_page': True, 'admin_notifications': admin_notifications}
     return render(request, 'core/admin/order_list.html', context)  # Updated template path
 
 @staff_member_required
@@ -119,3 +154,64 @@ def admin_order_update_status(request, pk):
             order.save()
             messages.success(request, f'Order #{order.id} status updated to "{new_status}".')
     return redirect('admin_order_list')
+
+@staff_member_required
+def admin_customers(request):
+    customers = User.objects.filter(role='customer').order_by('-date_joined')
+    # Tìm kiếm
+    search = request.GET.get('search', '').strip()
+    if search:
+        customers = customers.filter(
+            models.Q(first_name__icontains=search) |
+            models.Q(last_name__icontains=search) |
+            models.Q(username__icontains=search) |
+            models.Q(email__icontains=search)
+        )
+    # Lọc trạng thái
+    status = request.GET.get('status', '')
+    if status == 'active':
+        customers = customers.filter(is_active=True)
+    elif status == 'inactive':
+        customers = customers.filter(is_active=False)
+    # Phân trang
+    paginator = Paginator(customers, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    total_customers = User.objects.filter(role='customer').count()
+
+    # Thông báo đơn hàng mới và đơn hàng vừa giao
+    new_orders = Order.objects.filter(status='pending').order_by('-created_at')[:5]
+    delivered_orders = Order.objects.filter(status='delivered').order_by('-updated_at')[:5]
+    admin_notifications = []
+    for order in new_orders:
+        admin_notifications.append(f"Đơn hàng #{order.id} vừa được đặt bởi {order.customer.username}.")
+    for order in delivered_orders:
+        admin_notifications.append(f"Đơn hàng #{order.id} đã giao thành công.")
+
+    context = {
+        'customers': page_obj,
+        'search': search,
+        'status': status,
+        'is_admin_page': True,
+        'total_customers': total_customers,
+        'admin_notifications': admin_notifications,
+    }
+    return render(request, 'core/admin/admin_customers.html', context)
+
+@staff_member_required
+def admin_customer_toggle(request, pk):
+    user = get_object_or_404(User, pk=pk, role='customer')
+    if request.method == 'POST':
+        user.is_active = not user.is_active
+        user.save()
+        if user.is_active:
+            messages.success(request, f'Đã mở khóa khách hàng {user.username}')
+        else:
+            messages.warning(request, f'Đã chặn khách hàng {user.username}')
+    return redirect('admin_customers')
+
+@staff_member_required
+def admin_customer_detail(request, pk):
+    user = get_object_or_404(User, pk=pk, role='customer')
+    orders = user.orders.all().order_by('-created_at')  # Sử dụng related_name='orders' từ model Order
+    return render(request, 'core/admin/admin_customer_detail.html', {'customer': user, 'orders': orders})

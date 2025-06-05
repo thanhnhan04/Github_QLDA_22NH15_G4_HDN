@@ -1,0 +1,86 @@
+{% extends 'core/admin/admin_base.html' %}
+{% load core_extras %}
+{% block title %}Chi Tiết Đơn Hàng{% endblock %}
+{% block admin_content %}
+<div class="container py-5">
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+            <h3 class="mb-0" style="color: var(--primary-red);">Chi Tiết Đơn Hàng #{{ order.id }}</h3>
+            <span class="badge status-badge status-{{ order.status }} fs-6">
+                {% if order.status == 'pending' %}Chờ xử lý
+                {% elif order.status == 'processing' %}Đang xử lý
+                {% elif order.status == 'delivered' %}Đã giao
+                {% else %}Đã hủy{% endif %}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>Khách hàng:</strong> {{ order.customer.username }}</p>
+                    <p><strong>Số điện thoại:</strong> {{ order.customer.phone|default:'-' }}</p>
+                    <p><strong>Ngày đặt:</strong> {{ order.created_at|date:'d/m/Y H:i' }}</p>
+                    <p><strong>Thanh toán:</strong> 
+                        {% if order.payment_method == 'cash' %}Tiền mặt
+                        {% elif order.payment_method == 'card' %}Thẻ
+                        {% else %}Chuyển khoản{% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <form method="post" action="{% url 'admin_order_update_status' order.id %}" class="d-flex align-items-center justify-content-end">
+                        {% csrf_token %}
+                        <select name="status" class="form-select form-select-sm status-select w-auto me-2" style="min-width: 160px;" onchange="this.form.submit()">
+                            {% for status, label in order.STATUS_CHOICES %}
+                            <option value="{{ status }}" {% if order.status == status %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-outline-primary btn-sm">Cập nhật</button>
+                    </form>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead>
+                        <tr>
+                            <th>Hình ảnh</th>
+                            <th>Món ăn</th>
+                            <th class="text-center">Số lượng</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-end">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>
+                                <img src="{{ item.product_image_url }}" alt="{{ item.product_name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);">
+                            </td>
+                            <td>{{ item.product_name }}</td>
+                            <td class="text-center">{{ item.quantity }}</td>
+                            <td class="text-end">{{ item.unit_price|format_price }}</td>
+                            <td class="text-end">{{ item.total_price|format_price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" class="text-end"><strong>Tổng cộng:</strong></td>
+                            <td class="text-end"><strong class="price-tag h5">{{ order.total|format_price }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+}
+.status-pending { background-color: #FFC107 !important; color: #000; }
+.status-processing { background-color: #17A2B8 !important; color: white; }
+.status-delivered { background-color: #28A745 !important; color: white; }
+.status-cancelled { background-color: #DC3545 !important; color: white; }
+</style>
+{% endblock %}

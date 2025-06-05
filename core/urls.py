@@ -4,7 +4,7 @@ from .views_pkg.auth_views import user_login, user_logout, register, profile  # 
 from .views_pkg.product_views import product_list, product_create, product_edit, product_delete  # Import từ core/views_pkg/product_views.py
 from .views_pkg.cart_views import cart_detail, cart_add, cart_remove, cart_update_quantity  # Import từ core/views_pkg/cart_views.py
 from .views_pkg.order_views import order_create, order_list, order_detail  # Import từ core/views_pkg/order_views.py
-from .views_pkg.admin_views import admin_products, admin_product_add, admin_product_edit, admin_product_delete, admin_product_toggle, admin_order_detail, admin_order_list, admin_order_update_status  # Import từ core/views_pkg/admin_views.py
+from .views_pkg.admin_views import admin_products, admin_product_add, admin_product_edit, admin_product_delete, admin_product_toggle, admin_order_detail, admin_order_list, admin_order_update_status, admin_customers, admin_customer_toggle, admin_customer_detail  # Import thêm các view mới
 
 urlpatterns = [
     # Authentication URLs
@@ -45,4 +45,9 @@ urlpatterns = [
     path('admin_products/<int:pk>/edit/', admin_product_edit, name='admin_product_edit'),
     path('admin_products/<int:pk>/delete/', admin_product_delete, name='admin_product_delete'),
     path('admin_products/<int:pk>/toggle/', admin_product_toggle, name='admin_product_toggle'),
+
+    # Admin Customer Management
+    path('admin_customers/', admin_customers, name='admin_customers'),
+    path('admin_customers/<int:pk>/toggle/', admin_customer_toggle, name='admin_customer_toggle'),
+    path('admin_customers/<int:pk>/detail/', admin_customer_detail, name='admin_customer_detail'),
 ]

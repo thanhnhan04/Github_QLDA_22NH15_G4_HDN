@@ -1,334 +1,364 @@
-<!DOCTYPE html> 
-<html>
-<head>
-    <title>Admin - Product Management</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-</head>
-<body>
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <div class="bg-light border-end p-3" style="width:220px; min-height:100vh;">
-            <h4>FastFood Admin</h4>
-            <ul class="nav flex-column mt-4">
-                <li class="nav-item"><a class="nav-link" href="{% url 'admin_home' %}">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link active" href="{% url 'admin_products' %}">Manage Products</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Orders</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Users</a></li>
-                <li class="nav-item"><a class="nav-link text-danger" href="{% url 'logout' %}">Logout</a></li>
-            </ul>
+{% extends 'core/admin/admin_base.html' %}
+{% load core_extras %}
+{% block title %}Quản Lý Sản Phẩm{% endblock %}
+{% block admin_content %}
+<div class="container-fluid py-5 hero-section mb-4">
+    <div class="container">
+        <h1 class="display-4 text-center mb-4 text-white">Quản Lý Sản Phẩm</h1>
+        <p class="lead text-center mb-0 text-white-50">Xem, tìm kiếm, lọc và quản lý sản phẩm</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card shadow-lg rounded-3 border-0">
+        <div class="card-header bg-white border-0">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0" style="color: var(--primary-red);">Danh Sách Sản Phẩm</h3>
+                <span class="badge bg-primary">{{ total_products }} sản phẩm</span>
+                <button type="button" class="btn btn-success ms-3" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                    <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm
+                </button>
+            </div>
+            <!-- Filter -->
+            <form method="get" class="row g-2 mt-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="search" placeholder="Tìm theo tên..." value="{{ request.GET.search|default:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="category" class="form-select">
+                        <option value="">Tất cả danh mục</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:'i' %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="available" class="form-select">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="True" {% if request.GET.available == "True" %}selected{% endif %}>Hiển thị</option>
+                        <option value="False" {% if request.GET.available == "False" %}selected{% endif %}>Ẩn</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">Lọc</button>
+                </div>
+            </form>
         </div>
-        
-        <!-- Main Content -->
-        <div class="flex-grow-1 p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Product Management</h2>
-                <div>
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                        <i class="bi bi-plus-circle"></i> Add Product
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Search/Filter -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" name="search" placeholder="Search by name..." value="{{ request.GET.search|default:'' }}">
-                        </div>
-                        <div class="col-md-3">
-                            <select name="category" class="form-select">
-                                <option value="">All Categories</option>
-                                {% for cat in categories %}
-                                <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select name="available" class="form-select">
-                                <option value="">All Status</option>
-                                <option value="True" {% if request.GET.available == "True" %}selected{% endif %}>Available</option>
-                                <option value="False" {% if request.GET.available == "False" %}selected{% endif %}>Hidden</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-primary w-100">Filter</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Products Table -->
-            <div class="card">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Image</th>
-                                    <th>Name</th>
-                                    <th>Category</th>
-                                    <th>Price (VNĐ)</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for product in products %}
-                                <tr>
-                                    <td>
-                                        No image
-                                    </td>
-                                    <td>{{ product.name }}</td>
-                                    <td>{{ product.category.name }}</td>
-                                    <td>{{ product.price }} VNĐ</td>
-                                    <td>
-                                        {% if product.is_available %}
-                                            <span class="badge bg-success">Available</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">Hidden</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editProductModal" 
-                                                data-id="{{ product.id }}">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <a href="#" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal" data-id="{{ product.id }}" data-name="{{ product.name }}">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
-                                        <form method="post" action="{% url 'admin_product_toggle' product.id %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-sm {% if product.is_available %}btn-warning{% else %}btn-success{% endif %}">
-                                                {% if product.is_available %}
-                                                    <i class="bi bi-eye-slash"></i>
-                                                {% else %}
-                                                    <i class="bi bi-eye"></i>
-                                                {% endif %}
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="6" class="text-center">No products found.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    {% if products.has_other_pages %}
-                    <nav aria-label="Page navigation" class="mt-4">
-                        <ul class="pagination justify-content-center">
-                            {% if products.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ products.previous_page_number }}">Previous</a>
-                            </li>
-                            {% else %}
-                            <li class="page-item disabled">
-                                <span class="page-link">Previous</span>
-                            </li>
-                            {% endif %}
-                            {% for num in products.paginator.page_range %}
-                                {% if products.number == num %}
-                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        <div class="card-body">
+            {% if products %}
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead>
+                        <tr>
+                            <th>Ảnh</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Danh mục</th>
+                            <th class="text-end">Giá (VNĐ)</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr class="product-row">
+                            <td>
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                {% elif product.image_url %}
+                                    <img src="{{ product.image_url }}" alt="{{ product.name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
                                 {% else %}
-                                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                                    <span class="text-danger small">No image</span>
                                 {% endif %}
-                            {% endfor %}
-                            {% if products.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ products.next_page_number }}">Next</a>
-                            </li>
-                            {% else %}
-                            <li class="page-item disabled">
-                                <span class="page-link">Next</span>
-                            </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
+                            </td>
+                            <td class="fw-bold">{{ product.name }}</td>
+                            <td>{{ product.category.name }}</td>
+                            <td class="text-end price-tag">{{ product.price|format_price }}</td>
+                            <td>
+                                {% if product.is_available %}
+                                    <span class="badge status-badge status-available">Hiển thị</span>
+                                {% else %}
+                                    <span class="badge status-badge status-hidden">Ẩn</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#editProductModal" data-id="{{ product.id }}">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </button>
+                                <a href="#" class="btn btn-sm btn-outline-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal" data-id="{{ product.id }}" data-name="{{ product.name }}">
+                                    <i class="bi bi-trash"></i> Xóa
+                                </a>
+                                <form method="post" action="{% url 'admin_product_toggle' product.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm rounded-pill {% if product.is_available %}btn-outline-warning{% else %}btn-outline-success{% endif %}">
+                                        {% if product.is_available %}
+                                            <i class="bi bi-eye-slash"></i> Ẩn
+                                        {% else %}
+                                            <i class="bi bi-eye"></i> Hiện
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Không có sản phẩm nào.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination -->
+            {% if products.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if products.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.previous_page_number }}">Previous</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
                     {% endif %}
-                </div>
+                    {% for num in products.paginator.page_range %}
+                        {% if products.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% else %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if products.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.next_page_number }}">Next</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-box-seam fa-3x mb-3" style="color: var(--primary-orange);"></i>
+                <h4 class="mb-3">Chưa có sản phẩm nào</h4>
+                <p class="text-muted mb-0">Hiện tại chưa có sản phẩm nào được tạo</p>
             </div>
+            {% endif %}
         </div>
     </div>
+</div>
 
-    <!-- Add Product Modal -->
-    <div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form method="post" action="{% url 'admin_product_add' %}" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="modal-header">
-              <h5 class="modal-title">Add Product</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <div class="mb-3">
-                <label for="addName" class="form-label">Name</label>
-                <input type="text" name="name" id="addName" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="addPrice" class="form-label">Price (VNĐ)</label>
-                <input type="number" name="price" id="addPrice" class="form-control" step="0.01" required>
-              </div>
-              <div class="mb-3">
-                <label for="addDescription" class="form-label">Description</label>
-                <textarea name="description" id="addDescription" class="form-control"></textarea>
-              </div>
-              <div class="mb-3">
-                <label for="addCategory" class="form-label">Category</label>
-                <select name="category" id="addCategory" class="form-select" required>
-                  <option value="">Select Category</option>
-                  {% for cat in categories %}
-                    <option value="{{ cat.id }}">{{ cat.name }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="is_available" id="addAvailable" checked>
-                <label class="form-check-label" for="addAvailable">Available</label>
-              </div>
-              <div class="mb-3 mt-3">
-                <label for="addImage" class="form-label">Image</label>
-                <input type="file" name="image" id="addImage" class="form-control" accept="image/*">
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-success">Add</button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            </div>
-          </form>
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'admin_product_add' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Thêm Sản Phẩm</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-      </div>
-    </div>
-
-    <!-- Edit Product Modal -->
-    <div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form method="post" id="editProductForm" action="" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="modal-header">
-              <h5 class="modal-title">Edit Product</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <input type="hidden" name="product_id" id="editProductId">
-              <div class="mb-3">
-                <label for="editName" class="form-label">Name</label>
-                <input type="text" name="name" id="editName" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="editPrice" class="form-label">Price (VNĐ)</label>
-                <input type="number" name="price" id="editPrice" class="form-control" step="0.01" required>
-              </div>
-              <div class="mb-3">
-                <label for="editDescription" class="form-label">Description</label>
-                <textarea name="description" id="editDescription" class="form-control"></textarea>
-              </div>
-              <div class="mb-3">
-                <label for="editCategory" class="form-label">Category</label>
-                <select name="category" id="editCategory" class="form-select" required>
-                  <option value="">Select Category</option>
-                  {% for cat in categories %}
-                    <option value="{{ cat.id }}">{{ cat.name }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="form-check">
-                <input type="checkbox" name="is_available" id="editAvailable" class="form-check-input">
-                <label for="editAvailable" class="form-check-label">Available</label>
-              </div>
-              <div class="mb-3 mt-3">
-                <label for="editImage" class="form-label">Change Image</label>
-                <input type="file" name="image" id="editImage" class="form-control" accept="image/*">
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-primary">Save Changes</button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            </div>
-          </form>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="addName" class="form-label">Tên sản phẩm</label>
+            <input type="text" name="name" id="addName" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="addPrice" class="form-label">Giá (VNĐ)</label>
+            <input type="number" name="price" id="addPrice" class="form-control" step="0.01" required>
+          </div>
+          <div class="mb-3">
+            <label for="addDescription" class="form-label">Mô tả</label>
+            <textarea name="description" id="addDescription" class="form-control"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="addCategory" class="form-label">Danh mục</label>
+            <select name="category" id="addCategory" class="form-select" required>
+              <option value="">Chọn danh mục</option>
+              {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="is_available" id="addAvailable" checked>
+            <label class="form-check-label" for="addAvailable">Hiển thị</label>
+          </div>
+          <div class="mb-3 mt-3">
+            <label for="addImage" class="form-label">Hình ảnh</label>
+            <input type="file" name="image" id="addImage" class="form-control" accept="image/*">
+            <input type="text" name="image_url" id="addImageUrl" class="form-control mt-2" placeholder="Hoặc dán URL hình ảnh tại đây">
+          </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Delete Confirm Modal -->
-    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <form method="post" id="deleteProductForm">
-            {% csrf_token %}
-            <div class="modal-header">
-              <h5 class="modal-title">Confirm Delete</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <p>Are you sure you want to delete product <strong id="deleteProductName"></strong>?</p>
-              <input type="hidden" name="product_id" id="deleteProductId">
-            </div>
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-danger">Delete</button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            </div>
-          </form>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Thêm</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
         </div>
-      </div>
+      </form>
     </div>
+  </div>
+</div>
 
-    <!-- Bootstrap JS + Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Custom JS for Modal Data Handling -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      var editModal = document.getElementById('editProductModal');
-      editModal.addEventListener('show.bs.modal', function(event) {
-        var button = event.relatedTarget;
+<!-- Edit Product Modal -->
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" id="editProductForm" action="" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Sửa Sản Phẩm</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="product_id" id="editProductId">
+          <div class="mb-3">
+            <label for="editName" class="form-label">Tên sản phẩm</label>
+            <input type="text" name="name" id="editName" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="editPrice" class="form-label">Giá (VNĐ)</label>
+            <input type="number" name="price" id="editPrice" class="form-control" step="0.01" required>
+          </div>
+          <div class="mb-3">
+            <label for="editDescription" class="form-label">Mô tả</label>
+            <textarea name="description" id="editDescription" class="form-control"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="editCategory" class="form-label">Danh mục</label>
+            <select name="category" id="editCategory" class="form-select" required>
+              <option value="">Chọn danh mục</option>
+              {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" name="is_available" id="editAvailable" class="form-check-input">
+            <label for="editAvailable" class="form-check-label">Hiển thị</label>
+          </div>
+          <div class="mb-3 mt-3">
+            <label for="editImage" class="form-label">Thay đổi hình ảnh</label>
+            <input type="file" name="image" id="editImage" class="form-control" accept="image/*">
+            <input type="text" name="image_url" id="editImageUrl" class="form-control mt-2" placeholder="Hoặc dán URL hình ảnh tại đây">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
-        // Lấy data từ button
-        var id = button.getAttribute('data-id');
+<!-- Delete Confirm Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" id="deleteProductForm">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Xác nhận xóa</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Bạn có chắc chắn muốn xóa sản phẩm <strong id="deleteProductName"></strong>?</p>
+          <input type="hidden" name="product_id" id="deleteProductId">
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger">Xóa</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
-        // Fetch product details via AJAX GET
-        fetch(`/admin_products/${id}/edit/`)
-          .then(response => response.json())
-          .then(data => {
-              // Set form action URL (if using POST via view)
-              var form = document.getElementById('editProductForm');
-              form.action = `/admin_products/${id}/edit/`;
-              // Fill form fields
-              document.getElementById('editProductId').value = id;
-              document.getElementById('editName').value = data.name;
-              document.getElementById('editPrice').value = data.price;
-              document.getElementById('editDescription').value = data.description;
-              document.getElementById('editCategory').value = data.category;
-              document.getElementById('editAvailable').checked = data.is_available;
-          })
-          .catch(error => {
-              console.error('Error fetching product data:', error);
-          });
+<!-- Bootstrap JS + Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JS for Modal Data Handling -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var editModal = document.getElementById('editProductModal');
+  editModal.addEventListener('show.bs.modal', function(event) {
+    var button = event.relatedTarget;
+
+    // Lấy data từ button
+    var id = button.getAttribute('data-id');
+
+    // Fetch product details via AJAX GET
+    fetch(`/admin_products/${id}/edit/`)
+      .then(response => response.json())
+      .then(data => {
+          // Set form action URL (if using POST via view)
+          var form = document.getElementById('editProductForm');
+          form.action = `/admin_products/${id}/edit/`;
+          // Fill form fields
+          document.getElementById('editProductId').value = id;
+          document.getElementById('editName').value = data.name;
+          document.getElementById('editPrice').value = data.price;
+          document.getElementById('editDescription').value = data.description;
+          document.getElementById('editCategory').value = data.category;
+          document.getElementById('editAvailable').checked = data.is_available;
+      })
+      .catch(error => {
+          console.error('Error fetching product data:', error);
       });
+  });
 
-      // Delete Modal
-      var deleteModal = document.getElementById('deleteConfirmModal');
-      deleteModal.addEventListener('show.bs.modal', function(event) {
-        var button = event.relatedTarget;
-        var id = button.getAttribute('data-id');
-        var name = button.getAttribute('data-name');
+  // Delete Modal
+  var deleteModal = document.getElementById('deleteConfirmModal');
+  deleteModal.addEventListener('show.bs.modal', function(event) {
+    var button = event.relatedTarget;
+    var id = button.getAttribute('data-id');
+    var name = button.getAttribute('data-name');
 
-        deleteModal.querySelector('#deleteProductName').textContent = name;
-        deleteModal.querySelector('#deleteProductId').value = id;
+    deleteModal.querySelector('#deleteProductName').textContent = name;
+    deleteModal.querySelector('#deleteProductId').value = id;
 
-        var form = deleteModal.querySelector('form');
-        form.action = `/admin/products/delete/${id}/`;  // sửa URL theo project bạn
-      });
-    });
-    </script>
-</body>
-</html>
+    var form = deleteModal.querySelector('form');
+    form.action = `/admin_products/${id}/delete/`;  // sửa URL theo project bạn
+  });
+});
+</script>
+
+<style>
+    .product-row {
+        transition: all 0.3s ease;
+    }
+    .product-row:hover {
+        background-color: var(--background-cream) !important;
+    }
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+    .status-available {
+        background-color: #28A745 !important;
+        color: white;
+    }
+    .status-hidden {
+        background-color: #6c757d !important;
+        color: white;
+    }
+    .price-tag {
+        color: var(--primary-red);
+        font-weight: 600;
+    }
+    @media (max-width: 768px) {
+        .table > :not(caption) > * > * {
+            padding: 0.75rem 0.5rem;
+        }
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+    }
+</style>
+{% endblock %}
 
 

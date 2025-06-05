@@ -28,3 +28,17 @@ def format_price(value):
         return "{:,.0f} VNĐ".format(number).replace(",", ".")
     except (ValueError, TypeError):
         return "0 VNĐ"
+
+@register.filter(name='startswith')
+def startswith(text, starts):
+    """Return True if text starts with the given substring."""
+    if not isinstance(text, str):
+        return False
+    return text.startswith(starts)
+
+@register.filter(name='contains')
+def contains(text, substring):
+    """Return True if substring is in text."""
+    if not isinstance(text, str):
+        return False
+    return substring in text
