@@ -3,7 +3,7 @@ from .views import admin_home  # Import admin_home từ core/views.py
 from .views_pkg.auth_views import user_login, user_logout, register, profile  # Import từ core/views_pkg/auth_views.py
 from .views_pkg.product_views import product_list, product_create, product_edit, product_delete  # Import từ core/views_pkg/product_views.py
 from .views_pkg.cart_views import cart_detail, cart_add, cart_remove, cart_update_quantity  # Import từ core/views_pkg/cart_views.py
-from .views_pkg.order_views import order_create, order_list, order_detail, order_confirm, ajax_promotion_calculate  # Import từ core/views_pkg/order_views.py
+from .views_pkg.order_views import order_create, order_list, order_detail, order_confirm, ajax_promotion_calculate, mark_notification_read  # Import thêm mark_notification_read
 from .views_pkg.admin_views import admin_products, admin_product_add, admin_product_edit, admin_product_delete, admin_product_toggle, admin_order_detail, admin_order_list, admin_order_update_status, admin_customers, admin_customer_toggle, admin_customer_detail, admin_statistics, admin_promotions, admin_promotion_add, admin_promotion_edit, admin_promotion_delete  # Import thêm các view mới
 
 urlpatterns = [
@@ -62,4 +62,7 @@ urlpatterns = [
 
     # Ajax URLs
     path('ajax/promotion-calculate/', ajax_promotion_calculate, name='ajax_promotion_calculate'),
+
+    # Notification URLs
+    path('notifications/<int:pk>/read/', mark_notification_read, name='mark_notification_read'),
 ]

@@ -384,6 +384,32 @@ Chỉ kiểm tra biến is_admin_page để hiển thị menu admin, không ki�
                         <i class="fas fa-sign-out-alt me-1"></i> Đăng xuất
                     </a>
                 </li>
+                {% if user.is_authenticated and user.role == 'customer' %}
+                <li class="nav-item flex-fill text-center position-relative">
+                    <a class="nav-link position-relative" href="#" id="notification-bell" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-bell"></i>
+                        {% if unread_notifications_count and unread_notifications_count > 0 %}
+                        <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7rem;">
+                            {{ unread_notifications_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="notification-bell" style="min-width: 320px; max-width: 400px; max-height: 320px; overflow-y: auto;">
+                        {% if notifications %}
+                            {% for n in notifications %}
+                            <li class="mb-2 {% if not n.is_read %}fw-bold{% endif %}">
+                                <a href="{% url 'mark_notification_read' n.id %}" class="dropdown-item small">
+                                    {{ n.message }}<br>
+                                    <span class="text-muted small">{{ n.created_at|date:'d/m/Y H:i' }}</span>
+                                </a>
+                            </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="dropdown-item text-muted small">Không có thông báo mới.</li>
+                        {% endif %}
+                    </ul>
+                </li>
+                {% endif %}
                 {% else %}
                 <li class="nav-item flex-fill text-center">
                     <a class="nav-link" href="{% url 'login' %}">

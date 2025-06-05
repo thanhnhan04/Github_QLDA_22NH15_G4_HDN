@@ -139,3 +139,13 @@ class OrderReview(models.Model):
 
     def __str__(self):
         return f'Review for Order #{self.order.id} by {self.customer.username}'
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications', null=True, blank=True)
+    message = models.CharField(max_length=255)
+    url = models.CharField(max_length=255, blank=True)  # Đường dẫn khi click vào thông báo
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Notification for {self.user.username if self.user else "All Admins"}: {self.message[:30]}'

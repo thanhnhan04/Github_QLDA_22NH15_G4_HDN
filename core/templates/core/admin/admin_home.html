@@ -1,62 +1,206 @@
 {% extends 'core/admin/admin_base.html' %}
 {% load core_extras %}
 {% block title %}Bảng Điều Khiển Quản Trị{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
 {% block admin_content %}
-<div class="container-fluid py-5 hero-section mb-4">
+<div class="admin-dashboard-bg py-5 mb-4">
     <div class="container">
-        <h1 class="display-4 text-center mb-4 text-white">Bảng Điều Khiển Quản Trị</h1>
+        <h1 class="display-4 text-center mb-3 text-white fw-bold" style="letter-spacing:1px;">Bảng Điều Khiển</h1>
         <p class="lead text-center mb-0 text-white-50">Tổng quan & truy cập nhanh các chức năng quản lý</p>
     </div>
 </div>
 <div class="container">
     <div class="row g-4 mb-4">
         <div class="col-md-3">
-            <div class="card shadow text-center border-0">
+            <div class="dashboard-card card border-0 shadow-lg text-center h-100 animate__animated animate__fadeInUp" data-bs-toggle="tooltip" data-bs-title="Tổng số sản phẩm đang bán">
                 <div class="card-body py-4">
-                    <div class="mb-2"><i class="bi bi-box-seam fa-2x text-primary"></i></div>
-                    <h3 class="mb-0">{{ total_products }}</h3>
+                    <div class="dashboard-icon mb-3 bg-gradient-primary animate-icon"><i class="fas fa-boxes fa-2x"></i></div>
+                    <h2 class="mb-0 fw-bold text-primary animated-counter" data-count="{{ total_products }}">0</h2>
                     <div class="text-muted mb-2">Sản phẩm</div>
-                    <a href="{% url 'admin_products' %}" class="btn btn-outline-primary btn-sm rounded-pill">Quản lý sản phẩm</a>
+                    <a href="{% url 'admin_products' %}" class="btn btn-gradient-primary btn-lg w-100 mt-2">Quản lý sản phẩm</a>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card shadow text-center border-0">
+            <div class="dashboard-card card border-0 shadow-lg text-center h-100 animate__animated animate__fadeInUp animate__delay-1s" data-bs-toggle="tooltip" data-bs-title="Tổng số đơn hàng hệ thống">
                 <div class="card-body py-4">
-                    <div class="mb-2"><i class="bi bi-receipt fa-2x text-success"></i></div>
-                    <h3 class="mb-0">{{ total_orders }}</h3>
+                    <div class="dashboard-icon mb-3 bg-gradient-success animate-icon"><i class="fas fa-clipboard-list fa-2x"></i></div>
+                    <h2 class="mb-0 fw-bold text-success animated-counter" data-count="{{ total_orders }}">0</h2>
                     <div class="text-muted mb-2">Đơn hàng</div>
-                    <a href="{% url 'admin_order_list' %}" class="btn btn-outline-success btn-sm rounded-pill">Quản lý đơn hàng</a>
+                    <a href="{% url 'admin_order_list' %}" class="btn btn-gradient-success btn-lg w-100 mt-2">Quản lý đơn hàng</a>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card shadow text-center border-0">
+            <div class="dashboard-card card border-0 shadow-lg text-center h-100 animate__animated animate__fadeInUp animate__delay-2s" data-bs-toggle="tooltip" data-bs-title="Tổng số khách hàng">
                 <div class="card-body py-4">
-                    <div class="mb-2"><i class="bi bi-people fa-2x text-info"></i></div>
-                    <h3 class="mb-0">{{ total_users }}</h3>                    <div class="text-muted mb-2">Người dùng</div>
-                    <a href="{% url 'admin_customers' %}" class="btn btn-outline-info btn-sm rounded-pill">Quản lý người dùng</a>
+                    <div class="dashboard-icon mb-3 bg-gradient-info animate-icon"><i class="fas fa-users fa-2x"></i></div>
+                    <h2 class="mb-0 fw-bold text-info animated-counter" data-count="{{ total_users }}">0</h2>
+                    <div class="text-muted mb-2">Người dùng</div>
+                    <a href="{% url 'admin_customers' %}" class="btn btn-gradient-info btn-lg w-100 mt-2">Quản lý người dùng</a>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card shadow text-center border-0">
+            <div class="dashboard-card card border-0 shadow-lg text-center h-100 animate__animated animate__fadeInUp animate__delay-3s" data-bs-toggle="tooltip" data-bs-title="Tổng doanh thu từ đơn hàng đã giao">
                 <div class="card-body py-4">
-                    <div class="mb-2"><i class="bi bi-cash-stack fa-2x text-warning"></i></div>
-                    <h3 class="mb-0">{{ total_revenue|format_price }}</h3>                    <div class="text-muted mb-2">Tổng doanh thu (đã giao)</div>
-                    <a href="{% url 'admin_statistics' %}" class="btn btn-outline-warning btn-sm rounded-pill">Xem chi tiết</a>
+                    <div class="dashboard-icon mb-3 bg-gradient-warning animate-icon"><i class="fas fa-money-bill-wave fa-2x"></i></div>
+                    <h2 class="mb-0 fw-bold text-warning animated-counter" data-count="{{ total_revenue|floatformat:0 }}">0</h2>
+                    <div class="text-muted mb-2">Tổng doanh thu</div>
+                    <a href="{% url 'admin_statistics' %}" class="btn btn-gradient-warning btn-lg w-100 mt-2">Xem chi tiết</a>
                 </div>
             </div>
         </div>
     </div>
+    <!-- <div class="row mb-4">
+        <div class="col-md-8 mx-auto">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3 text-gradient-primary">Biểu đồ doanh thu (demo)</h5>
+                    <canvas id="revenueChart" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+    </div> -->
 </div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <style>
-    .hero-section {
-        background: linear-gradient(45deg, var(--primary-red), var(--primary-orange));
-        position: relative;
-    }
-    .card .bi {
-        vertical-align: middle;
-    }
+.admin-dashboard-bg {
+    background: linear-gradient(120deg, #ff512f 0%, #f09819 100%);
+    border-radius: 0 0 32px 32px;
+    box-shadow: 0 8px 32px rgba(255,61,0,0.08);
+    animation: gradientMove 8s ease-in-out infinite alternate;
+}
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+.dashboard-card {
+    border-radius: 18px;
+    background: #fff;
+    transition: box-shadow 0.2s, transform 0.2s;
+    cursor: pointer;
+}
+.dashboard-card:hover {
+    box-shadow: 0 12px 32px rgba(255,61,0,0.16);
+    transform: translateY(-6px) scale(1.04);
+}
+.dashboard-icon {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin: 0 auto 1rem auto;
+    font-size: 2.2rem;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: transform 0.3s cubic-bezier(.68,-0.55,.27,1.55);
+}
+.dashboard-card:hover .dashboard-icon {
+    transform: rotate(-12deg) scale(1.15);
+}
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #ff512f 0%, #f09819 100%);
+}
+.bg-gradient-success {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+.bg-gradient-info {
+    background: linear-gradient(135deg, #36d1c4 0%, #5b86e5 100%);
+}
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+}
+.btn-gradient-primary {
+    background: linear-gradient(90deg, #ff512f 0%, #f09819 100%);
+    color: #fff;
+    border: none;
+}
+.btn-gradient-success {
+    background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+    color: #fff;
+    border: none;
+}
+.btn-gradient-info {
+    background: linear-gradient(90deg, #36d1c4 0%, #5b86e5 100%);
+    color: #fff;
+    border: none;
+}
+.btn-gradient-warning {
+    background: linear-gradient(90deg, #f7971e 0%, #ffd200 100%);
+    color: #fff;
+    border: none;
+}
+.btn-gradient-primary:hover, .btn-gradient-success:hover, .btn-gradient-info:hover, .btn-gradient-warning:hover {
+    filter: brightness(0.95);
+    color: #fff;
+}
+.text-gradient-primary {
+    background: linear-gradient(90deg, #ff512f 0%, #f09819 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
 </style>
+<script>
+// Animated counter
+function animateCounter(el) {
+    const target = parseInt(el.getAttribute('data-count'));
+    let count = 0;
+    const step = Math.ceil(target / 40);
+    const update = () => {
+        count += step;
+        if (count >= target) {
+            el.textContent = target.toLocaleString('vi-VN');
+        } else {
+            el.textContent = count.toLocaleString('vi-VN');
+            requestAnimationFrame(update);
+        }
+    };
+    update();
+}
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.animated-counter').forEach(animateCounter);
+    // Tooltip
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    // Chart.js demo
+    var ctx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+            datasets: [{
+                label: 'Doanh thu',
+                data: [120, 190, 300, 500, 200, 300, 400],
+                backgroundColor: 'rgba(255,99,71,0.7)',
+                borderRadius: 8,
+                maxBarThickness: 32
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString('vi-VN') + ' đ';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

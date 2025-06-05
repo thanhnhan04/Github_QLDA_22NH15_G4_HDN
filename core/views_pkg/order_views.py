@@ -3,11 +3,14 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db import transaction
 from ..models import Order, OrderItem, Cart, User, Promotion, OrderReview
+from core.models import Notification
 from django import forms
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.views.decorators.http import require_http_methods
 from core.forms import OrderReviewForm
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 def is_admin(user):
     return user.is_authenticated and user.role == 'admin'
@@ -87,11 +90,20 @@ def order_create(request):
 
 @login_required
 def order_list(request):
+    notifications = []
+    unread_notifications_count = 0
+    if request.user.role == 'customer':
+        notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:5]
+        unread_notifications_count = Notification.objects.filter(user=request.user, is_read=False).count()
     if request.user.role == 'admin':
         orders = Order.objects.all().order_by('-created_at')
     else:
         orders = Order.objects.filter(customer=request.user).order_by('-created_at')
-    return render(request, 'core/order/list.html', {'orders': orders})
+    return render(request, 'core/order/list.html', {
+        'orders': orders,
+        'notifications': notifications,
+        'unread_notifications_count': unread_notifications_count,
+    })
 
 @login_required
 def order_detail(request, pk):
@@ -122,6 +134,20 @@ def order_detail(request, pk):
                     return redirect('order_detail', pk=order.id)
             else:
                 review_form = OrderReviewForm()
+    # Tạo thông báo khi trạng thái đơn hàng thay đổi (chỉ khi là customer)
+    if request.method == 'POST' and request.user.role == 'customer':
+        new_status = request.POST.get('status')
+        if new_status and new_status != order.status:
+            order.status = new_status
+            order.save()
+            status_text = dict(Order.STATUS_CHOICES).get(new_status, new_status)
+            Notification.objects.create(
+                user=order.customer,
+                message=f'Trạng thái đơn hàng #{order.id} đã chuyển sang: {status_text}',
+                url=f'/orders/{order.id}/'
+            )
+            messages.success(request, f'Trạng thái đơn hàng đã được cập nhật: {status_text}')
+            return redirect('order_detail', pk=order.id)
     context = {'order': order, 'review': review, 'review_form': review_form, 'can_review': can_review}
     return render(request, 'core/order/detail.html', context)
 
@@ -242,3 +268,26 @@ def ajax_promotion_calculate(request):
             'promo_error': promo_error
         })
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@login_required
+def mark_notification_read(request, pk):
+    try:
+        notif = Notification.objects.get(pk=pk, user=request.user)
+        notif.is_read = True
+        notif.save()
+        if notif.url:
+            return HttpResponseRedirect(notif.url)
+    except Notification.DoesNotExist:
+        pass
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+# Gửi notification khi đơn hàng chuyển sang 'delivered'
+@receiver(post_save, sender=Order)
+def notify_order_delivered(sender, instance, created, **kwargs):
+    if not created and instance.status == 'delivered':
+        Notification.objects.get_or_create(
+            user=instance.customer,
+            message=f'Đơn hàng #{instance.id} của bạn đã được giao thành công!',
+            url=f'/orders/{instance.id}/',
+            is_read=False
+        )

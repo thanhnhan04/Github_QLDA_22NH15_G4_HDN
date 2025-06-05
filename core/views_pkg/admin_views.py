@@ -9,6 +9,7 @@ from django.utils import timezone
 from datetime import timedelta
 from ..models import Product, Category, Order, OrderItem, User
 from ..models import Promotion, OrderReview
+from core.models import Notification
 
 @staff_member_required
 def admin_products(request):
@@ -124,6 +125,12 @@ def admin_product_toggle(request, pk):
 
 @staff_member_required
 def admin_order_list(request):
+    notifications = []
+    unread_notifications_count = 0
+    admin = request.user
+    if admin.role == 'admin':
+        notifications = Notification.objects.filter(user=admin).order_by('-created_at')[:5]
+        unread_notifications_count = Notification.objects.filter(user=admin, is_read=False).count()
     orders = Order.objects.all().order_by('-created_at')
     status_filter = request.GET.get('status', '')
     if status_filter:
@@ -138,7 +145,8 @@ def admin_order_list(request):
     for order in delivered_orders:
         admin_notifications.append(f"Đơn hàng #{order.id} đã giao thành công.")
 
-    context = {'orders': orders, 'status_filter': status_filter, 'is_admin_page': True, 'admin_notifications': admin_notifications}
+    context = {'orders': orders, 'status_filter': status_filter, 'is_admin_page': True, 'admin_notifications': admin_notifications,
+        'notifications': notifications, 'unread_notifications_count': unread_notifications_count}
     return render(request, 'core/admin/order_list.html', context)  # Updated template path
 
 @staff_member_required
@@ -158,10 +166,19 @@ def admin_order_update_status(request, pk):
     order = get_object_or_404(Order, pk=pk)
     if request.method == 'POST':
         new_status = request.POST.get('status')
-        if new_status:
+        if new_status and new_status != order.status:
+            old_status = order.status
             order.status = new_status
             order.save()
-            messages.success(request, f'Order #{order.id} status updated to "{new_status}".')
+            status_text = dict(Order.STATUS_CHOICES).get(new_status, new_status)
+            Notification.objects.create(
+                user=order.customer,
+                message=f'Trạng thái đơn hàng #{order.id} đã chuyển sang: {status_text}',
+                url=f'/orders/{order.id}/'
+            )
+            messages.success(request, f'Đơn hàng #{order.id} đã được cập nhật thành {status_text}')
+        else:
+            messages.error(request, 'Trạng thái không hợp lệ hoặc không thay đổi')
     return redirect('admin_order_list')
 
 @staff_member_required
