@@ -1,146 +1,200 @@
-{% extends 'core/base.html' %}
-
+{% extends 'core/base_customer.html' %}
 {% block title %}Đăng Ký{% endblock %}
-
 {% block content %}
-<div class="container-fluid py-5 hero-section mb-4">
-    <div class="container">
-        <h1 class="display-4 text-center mb-4 text-white">Đăng Ký Tài Khoản</h1>
-        <p class="lead text-center mb-0 text-white-50">Tạo tài khoản để bắt đầu đặt món và nhận ưu đãi</p>
-    </div>
-</div>
-
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-lg rounded-3 border-0 hover-elevation">
-                <div class="card-header bg-white border-0 pt-4">
-                    <h3 class="text-center" style="color: var(--primary-red);">
-                        <i class="fas fa-user-plus fa-2x mb-3"></i><br>
-                        Đăng Ký Tài Khoản
-                    </h3>
-                </div>
-                <div class="card-body px-4 py-4">
-                    <form method="post">
-                        {% csrf_token %}
-                        {% for field in form %}
-                        <div class="mb-4">
-                            <label for="{{ field.id_for_label }}" class="form-label">
-                                {{ field.label }}
-                                {% if field.field.required %}
-                                <span class="text-danger">*</span>
-                                {% endif %}
-                            </label>
-                            
-                            {% if field.errors %}
-                            <div class="alert alert-danger py-2">
-                                {{ field.errors }}
-                            </div>
-                            {% endif %}
-                            
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0">
-                                    {% if field.name == 'username' %}
-                                        <i class="fas fa-user text-muted"></i>
-                                    {% elif field.name == 'email' %}
-                                        <i class="fas fa-envelope text-muted"></i>
-                                    {% elif 'password' in field.name %}
-                                        <i class="fas fa-lock text-muted"></i>
-                                    {% elif field.name == 'phone' %}
-                                        <i class="fas fa-phone text-muted"></i>
-                                    {% elif field.name == 'address' %}
-                                        <i class="fas fa-map-marker-alt text-muted"></i>
-                                    {% else %}
-                                        <i class="fas fa-pen text-muted"></i>
-                                    {% endif %}
-                                </span>
-                                
-                                {% if field.widget_type == 'textarea' %}
-                                    <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" 
-                                            class="form-control border-start-0 ps-0" rows="3"
-                                            placeholder="Nhập {{ field.label|lower }}">{{ field.value|default:'' }}</textarea>
-                                {% else %}
-                                    <input type="{{ field.field.widget.input_type|default:'text' }}"
-                                           name="{{ field.name }}"
-                                           id="{{ field.id_for_label }}"
-                                           class="form-control border-start-0 ps-0"
-                                           value="{{ field.value|default:'' }}"
-                                           placeholder="Nhập {{ field.label|lower }}"
-                                           {% if field.field.required %}required{% endif %}>
-                                {% endif %}
-                            </div>
-                            
-                            {% if field.help_text %}
-                            <div class="form-text text-muted small">{{ field.help_text }}</div>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                        
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-lg" 
-                                    style="background: var(--primary-red); color: white;">
-                                <i class="fas fa-user-plus me-2"></i>Đăng Ký
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                <div class="card-footer bg-light py-4 text-center border-0">
-                    <p class="mb-0">Đã có tài khoản? 
-                        <a href="{% url 'login' %}" style="color: var(--primary-red);">
-                            Đăng nhập ngay
-                            <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
-                    </p>
-                </div>
-            </div>
+<div class="login-bg-effect position-fixed top-0 start-0 w-100 h-100" style="z-index:0;"></div>
+<div class="container py-5 d-flex justify-content-center align-items-center position-relative" style="min-height: 95vh; z-index:2;">
+  <div class="login-register-card d-flex flex-column flex-md-row shadow-lg rounded-5 overflow-hidden" style="max-width: 1250px; width: 100%; background: #fff; min-height: 600px;">
+    <!-- Register form side -->
+    <div class="register-form-side p-5 d-flex flex-column justify-content-center align-items-center flex-fill" style="background: var(--primary-red,#FF3D00); min-width: 520px;">
+      <h2 class="fw-bold mb-4 text-center animated-gradient-text" style="letter-spacing: 1px; font-size:2.7rem;">REGISTER</h2>
+      <form method="post" class="w-100" style="max-width: 440px;">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-4 animated-form-group">
+          {% if field.errors %}
+          <div class="alert alert-danger py-2">{{ field.errors }}</div>
+          {% endif %}
+          <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control form-control-xl rounded-pill px-4 py-3 register-input" value="{{ field.value|default:'' }}" placeholder="{{ field.label }}{% if field.field.required %} *{% endif %}" {% if field.field.required %}required{% endif %}>
         </div>
+        {% endfor %}
+        <div class="d-grid mb-2">
+          <button type="submit" class="btn btn-lg rounded-pill fw-bold register-btn-main py-3 animated-btn" style="background: linear-gradient(90deg, var(--primary-yellow), var(--primary-orange)); color: #222; font-size:1.35rem;">Đăng Ký</button>
+        </div>
+      </form>
     </div>
+    <!-- Login side -->
+    <div class="login-side d-flex flex-column justify-content-center align-items-center flex-fill text-white text-center p-5" style="background: linear-gradient(135deg, #FF3D00 0%, #FFA000 100%); min-width: 520px;">
+      <h2 class="fw-bold mb-2 animated-gradient-text" style="font-size:2.5rem; color: #fff;">Welcome back!</h2>
+      <p class="mb-4" style="color: #fffbe7; text-shadow: 0 1px 4px rgba(0,0,0,0.10); font-size:1.22rem;">Đã có tài khoản? Đăng nhập để tiếp tục đặt món và nhận ưu đãi.</p>
+      <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg rounded-pill px-5 fw-bold login-btn-side animated-btn" style="border: 2px solid #fff; color: #fff; font-size:1.18rem;">Login</a>
+    </div>
+  </div>
 </div>
-
 <style>
-    .form-control:focus, .input-group-text {
-        border-color: var(--primary-orange);
-        box-shadow: none;
-    }
-    
-    .input-group-text {
-        border-right: none;
-    }
-    
-    .form-control {
-        border-left: none;
-    }
-    
-    .form-control:focus + .input-group-text {
-        border-color: var(--primary-orange);
-    }
-    
-    .card {
-        transform: translateY(0);
-        transition: all 0.3s ease;
-    }
-    
-    .card:hover {
-        transform: translateY(-10px);
-    }
-    
-    .btn:hover {
-        background: var(--dark-red) !important;
-        transform: translateY(-2px);
-    }
-    
-    .form-label {
-        font-weight: 500;
-        color: #555;
-    }
-    
-    .alert {
-        border-radius: 8px;
-        font-size: 0.9rem;
-    }
-    
-    textarea.form-control {
-        min-height: 100px;
-    }
+  .animated-gradient-text {
+    background: linear-gradient(90deg, #fffbe7, #ffe082, #FF3D00, #FFA000, #fffbe7);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientTextMove 3.5s ease-in-out infinite alternate;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+  @keyframes gradientTextMove {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+  .animated-btn {
+    transition: transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s;
+    box-shadow: 0 2px 8px rgba(255,160,0,0.10);
+    position: relative;
+    overflow: hidden;
+  }
+  .animated-btn:hover, .animated-btn:focus {
+    transform: scale(1.06) translateY(-2px) rotate(-1deg);
+    box-shadow: 0 8px 24px rgba(255,61,0,0.18);
+  }
+  .animated-form-group input:focus {
+    animation: inputPulse 0.7s;
+    outline: none;
+  }
+  @keyframes inputPulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,193,7,0.18); }
+    70% { box-shadow: 0 0 0 8px rgba(255,193,7,0.10); }
+    100% { box-shadow: 0 0 0 0 rgba(255,193,7,0.0); }
+  }
+  .login-bg-effect {
+    pointer-events: none;
+    background: linear-gradient(120deg, #fffbe7 0%, #fff3e0 100%);
+    overflow: hidden;
+    z-index: 0 !important;
+  }
+  /* Blob animation */
+  .login-bg-effect .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.45;
+    animation: blobMove 16s infinite alternate;
+    pointer-events: none;
+  }
+  .login-bg-effect .blob1 {
+    width: 600px; height: 600px;
+    left: 2vw; top: 8vh;
+    background: radial-gradient(circle at 30% 30%, #FF9800 0%, #FFE082 80%);
+    animation-delay: 0s;
+  }
+  .login-bg-effect .blob2 {
+    width: 400px; height: 400px;
+    right: 8vw; top: 18vh;
+    background: radial-gradient(circle at 70% 30%, #FFA000 0%, #FFFDE7 80%);
+    animation-delay: 3s;
+  }
+  .login-bg-effect .blob3 {
+    width: 350px; height: 350px;
+    left: 20vw; bottom: 6vh;
+    background: radial-gradient(circle at 50% 70%, #FF3D00 0%, #FFB300 80%);
+    animation-delay: 6s;
+  }
+  .login-bg-effect .blob4 {
+    width: 300px; height: 300px;
+    right: 18vw; bottom: 10vh;
+    background: radial-gradient(circle at 60% 60%, #FFA000 0%, #FFF8E1 80%);
+    animation-delay: 9s;
+  }
+  @keyframes blobMove {
+    0% { transform: scale(1) translateY(0) translateX(0); }
+    100% { transform: scale(1.18) translateY(40px) translateX(60px); }
+  }
+  .navbar {
+    z-index: 10 !important;
+    position: relative;
+  }
+  .login-register-card {
+    z-index: 2;
+    box-shadow: 0 20px 80px rgba(255,61,0,0.18);
+    border-radius: 3rem;
+    background: #fff;
+  }
+  .register-form-side {
+    min-width: 520px;
+    background: var(--primary-red,#FF3D00);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .register-form-side h2, .register-form-side label {
+    color: #fff !important;
+  }
+  .register-input {
+    background: #fff3e0;
+    color: #222;
+    border: none;
+    font-size: 1.15rem;
+    padding-top: 1.1rem !important;
+    padding-bottom: 1.1rem !important;
+    box-shadow: 0 2px 8px rgba(255,61,0,0.08);
+  }
+  .register-input:focus {
+    background: #fffbe7;
+    border: 2px solid var(--primary-yellow);
+    outline: none;
+    box-shadow: 0 2px 8px rgba(255,193,7,0.12);
+  }
+  .register-btn-main {
+    background: linear-gradient(90deg, var(--primary-yellow), var(--primary-orange));
+    color: #222;
+    border: none;
+    box-shadow: 0 2px 8px rgba(255,160,0,0.10);
+    transition: all 0.2s;
+    font-size: 1.25rem;
+    padding-top: 1.1rem !important;
+    padding-bottom: 1.1rem !important;
+  }
+  .register-btn-main:hover {
+    background: linear-gradient(90deg, var(--primary-orange), var(--primary-yellow));
+    color: #fff;
+    transform: translateY(-2px);
+  }
+  .login-side {
+    min-width: 520px;
+    background: linear-gradient(135deg, #FF3D00 0%, #FFA000 100%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .login-side h2, .login-side p {
+    color: #fff !important;
+  }
+  .login-btn-side {
+    border: 2px solid #fff;
+    color: #fff;
+    background: transparent;
+    transition: all 0.2s;
+    font-size: 1.18rem;
+    padding-top: 1.1rem !important;
+    padding-bottom: 1.1rem !important;
+  }
+  .login-btn-side:hover {
+    background: #fff;
+    color: #FF3D00;
+    border-color: #fff;
+    transform: translateY(-2px);
+  }
+  @media (max-width: 991px) {
+    .login-register-card { flex-direction: column !important; min-width: 100% !important; }
+    .register-form-side, .login-side { min-width: 100% !important; padding: 2rem 1rem !important; }
+  }
 </style>
+<!-- Blobs for animated background -->
+<div class="login-bg-effect position-fixed top-0 start-0 w-100 h-100" style="z-index:0; pointer-events:none;">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+  <div class="blob blob4"></div>
+</div>
 {% endblock %}

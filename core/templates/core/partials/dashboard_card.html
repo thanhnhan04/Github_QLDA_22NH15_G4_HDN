@@ -1,0 +1,11 @@
+{# Card dashboard dùng chung cho admin và customer #}
+<div class="dashboard-card card border-0 shadow-lg text-center h-100 animate__animated animate__fadeInUp" data-bs-toggle="tooltip" data-bs-title="{{ tooltip }}">
+    <div class="card-body py-4">
+        <div class="dashboard-icon mb-3 {{ icon_bg }} animate-icon"><i class="{{ icon }} fa-2x"></i></div>
+        <h2 class="mb-0 fw-bold {{ text_color }} animated-counter" data-count="{{ value }}">0</h2>
+        <div class="text-muted mb-2">{{ label }}</div>
+        {% if link and link_label %}
+        <a href="{{ link }}" class="btn {{ btn_class }} btn-lg w-100 mt-2">{{ link_label }}</a>
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,494 @@
+{% load core_extras %}
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Fast Food Delivery{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">    <style>
+        :root {
+            --primary-red: #FF3D00;
+            --primary-orange: #FFA000;
+            --primary-yellow: #FFEB3B;
+            --background-cream: #FFF8E1;
+            --dark-red: #D32F2F;
+        }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-cream);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+        }
+
+        .content-wrapper {
+            flex: 1 0 auto;
+            padding: 2rem 0;
+        }
+
+        .navbar {
+            background-color: var(--primary-red) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+        }        .navbar-brand {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.75rem;
+            color: white !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .brand-subtitle {
+            font-size: 0.9rem;
+            margin-left: 1rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            color: var(--primary-yellow);
+            text-transform: none;
+            border-left: 2px solid var(--primary-yellow);
+            padding-left: 1rem;
+        }
+
+        .navbar-brand:hover {
+            transform: translateY(-2px);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .navbar-brand:hover .brand-subtitle {
+            color: white;
+        }
+
+        .nav-link {
+            color: white !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem !important;
+            border-radius: 25px;
+            margin: 0 0.25rem;
+        }
+
+        .nav-link:hover {
+            background-color: var(--primary-orange);
+            transform: translateY(-2px);
+        }
+
+        .card {
+            transition: all 0.3s ease;
+            border-radius: 15px;
+            border: none;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .card-img-top {
+            transition: all 0.3s ease;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .card:hover .card-img-top {
+            transform: scale(1.05);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            background-color: var(--primary-orange) !important;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-orange);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-yellow);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 160, 0, 0.3);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-orange);
+            border-color: var(--primary-orange);
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-orange);
+            border-color: var(--primary-orange);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        footer {
+            background-color: var(--dark-red) !important;
+            color: white;
+            padding: 3rem 0 1.5rem;
+            margin-top: 4rem;
+            flex-shrink: 0;
+        }
+
+        footer h5 {
+            color: var(--primary-yellow);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--primary-yellow);
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Cart styling */
+        .quantity-input {
+            max-width: 80px;
+            border-radius: 20px;
+            border: 2px solid var(--primary-orange);
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        /* Category badges */
+        .category-badge {
+            background-color: var(--primary-red);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        /* Product price */
+        .price-tag {
+            color: var(--primary-red);
+            font-size: 1.25rem;
+            font-weight: 700;
+        }        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200') center/cover;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .hero-section .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-section h1 {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Category Card */
+        .category-card {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .category-card .card-header {
+            background-color: var(--primary-red);
+            color: white;
+            padding: 1rem;
+        }
+
+        .category-card .list-group-item {
+            border: none;
+            padding: 0.8rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .category-card .list-group-item:hover {
+            background-color: var(--background-cream);
+            color: var(--primary-red);
+            transform: translateX(5px);
+        }
+
+        .category-card .list-group-item.active {
+            background-color: var(--primary-orange);
+            border-color: var(--primary-orange);
+        }
+
+        /* Product Cards */
+        .card-img-overlay {
+            background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%);
+        }
+
+        .price-badge {
+            background-color: var(--primary-red) !important;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 1.5rem;
+            }
+            
+            .card-img-top {
+                height: 160px;
+            }
+
+            .content-wrapper {
+                padding: 1rem 0;
+            }
+
+            .hero-section {
+                padding: 2rem 0;
+            }
+
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+        }
+        .hover-elevation {
+            transition: all 0.3s ease;
+        }
+        .hover-elevation:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important;
+        }
+        .badge {
+            transition: all 0.3s ease;
+        }
+        .card:hover .badge {
+            transform: scale(1.1);
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card-footer {
+            border-top: none !important;
+        }
+        .bg-primary {
+            background-color: #007bff !important;
+        }
+        .text-primary {
+            color: #007bff !important;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            border-radius: 25px;
+        }
+        .navbar-brand {
+            font-family: 'Poppins', sans-serif;
+        }
+        .display-4 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body class="d-flex flex-column h-100">    {% comment %}
+Chỉ kiểm tra biến is_admin_page để hiển thị menu admin, không kiểm tra request.path nữa.
+{% endcomment %}
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <i class="fas fa-utensils me-2"></i>Tasty Food
+            <span class="brand-subtitle d-none d-md-inline">Ngon - Nhanh - Sạch</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mx-auto w-100 justify-content-center">
+                <li class="nav-item flex-fill text-center">
+                    <a class="nav-link" href="{% url 'product_list' %}">
+                        <i class="fas fa-book-open me-1"></i> Thực đơn
+                    </a>
+                </li>
+                {% if user.is_authenticated %}
+                <li class="nav-item flex-fill text-center">
+                    <a class="nav-link" href="{% url 'cart_detail' %}">
+                        <i class="fas fa-shopping-cart me-1"></i> Giỏ hàng
+                    </a>
+                </li>
+                <li class="nav-item flex-fill text-center">
+                    <a class="nav-link" href="{% url 'order_list' %}">
+                        <i class="fas fa-clipboard-list me-1"></i> Đơn hàng
+                    </a>
+                </li>
+                <li class="nav-item flex-fill text-center">
+                    <a class="nav-link" href="{% url 'profile' %}">
+                        <i class="fas fa-user me-1"></i> Hồ sơ
+                    </a>
+                </li>
+                <li class="nav-item flex-fill text-center">
+                    <a class="nav-link" href="{% url 'logout' %}">
+                        <i class="fas fa-sign-out-alt me-1"></i> Đăng xuất
+                    </a>
+                </li>
+                {% if user.is_authenticated and user.role == 'customer' %}
+                <li class="nav-item flex-fill text-center position-relative">
+                    <a class="nav-link position-relative" href="#" id="notification-bell" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-bell"></i>
+                        {% if unread_notifications_count and unread_notifications_count > 0 %}
+                        <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7rem;">
+                            {{ unread_notifications_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="notification-bell" style="min-width: 320px; max-width: 400px; max-height: 320px; overflow-y: auto;">
+                        {% if notifications %}
+                            {% for n in notifications %}
+                            <li class="mb-2 {% if not n.is_read %}fw-bold{% endif %}">
+                                <a href="{% url 'mark_notification_read' n.id %}" class="dropdown-item small">
+                                    {{ n.message }}<br>
+                                    <span class="text-muted small">{{ n.created_at|date:'d/m/Y H:i' }}</span>
+                                </a>
+                            </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="dropdown-item text-muted small">Không có thông báo mới.</li>
+                        {% endif %}
+                    </ul>
+                </li>
+                {% endif %}
+                {% else %}
+                <li class="nav-item flex-fill text-center">
+                    <a class="nav-link" href="{% url 'login' %}">
+                        <i class="fas fa-sign-in-alt me-1"></i> Đăng nhập
+                    </a>
+                </li>
+                <li class="nav-item flex-fill text-center">
+                    <a class="nav-link" href="{% url 'register' %}">
+                        <i class="fas fa-user-plus me-1"></i> Đăng ký
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}    <div class="content-wrapper">
+        <div class="container mt-4">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                    <h5 class="text-uppercase">
+                        <i class="fas fa-utensils me-2"></i>Fast Food Delivery
+                    </h5>
+                    <p class="mb-3">
+                        Giao món ăn ngon tận nơi. Nhanh chóng, tươi ngon và đảm bảo!
+                    </p>
+                    <div class="mt-4">
+                        <a href="#" class="me-4"><i class="fab fa-facebook-f fa-lg"></i></a>
+                        <a href="#" class="me-4"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="me-4"><i class="fab fa-instagram fa-lg"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                    <h5 class="text-uppercase mb-4">Giờ Mở Cửa</h5>
+                    <table class="table text-white">
+                        <tbody>
+                            <tr>
+                                <td>Thứ 2 - Thứ 5:</td>
+                                <td>9:00 - 21:00</td>
+                            </tr>
+                            <tr>
+                                <td>Thứ 6 - Thứ 7:</td>
+                                <td>9:00 - 23:00</td>
+                            </tr>
+                            <tr>
+                                <td>Chủ nhật:</td>
+                                <td>9:00 - 20:00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="text-uppercase mb-4">Liên Hệ</h5>
+                    <p><i class="fas fa-home me-3"></i> 123 Đường Ẩm Thực, TP.HCM</p>
+                    <p><i class="fas fa-envelope me-3"></i> lienhe@fastfood.com</p>
+                    <p><i class="fas fa-phone me-3"></i> 0123 456 789</p>
+                </div>
+            </div>
+
+            <div class="text-center border-top border-secondary pt-3">
+                <p class="mb-0">&copy; 2025 Fast Food Delivery. Đã đăng ký bản quyền.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

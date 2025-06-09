@@ -24,18 +24,6 @@
                         {% elif order.payment_method == 'card' %}Thẻ
                         {% else %}Chuyển khoản{% endif %}
                     </p>
-                    {% if review %}
-                    <div class="mt-3 p-3 bg-light rounded border">
-                        <strong>Đánh giá của khách hàng:</strong><br>
-                        <span class="text-warning">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= review.rating %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star"></i>{% endif %}
-                            {% endfor %}
-                        </span>
-                        {% if review.comment %}<div class="mt-2">"{{ review.comment }}"</div>{% endif %}
-                        <div class="text-muted small">Đánh giá lúc {{ review.created_at|date:"d/m/Y H:i" }}</div>
-                    </div>
-                    {% endif %}
                 </div>
                 <div class="col-md-6">
                     <form method="post" action="{% url 'admin_order_update_status' order.id %}" class="d-flex align-items-center justify-content-end">
@@ -64,7 +52,11 @@
                         {% for item in order.items.all %}
                         <tr>
                             <td>
-                                <img src="{{ item.product_image_url }}" alt="{{ item.product_name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);">
+                                {% if item.product and item.product.image %}
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);">
+                                {% else %}
+                                    <img src="{{ item.product_image_url }}" alt="{{ item.product_name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);">
+                                {% endif %}
                             </td>
                             <td>{{ item.product_name }}</td>
                             <td class="text-center">{{ item.quantity }}</td>

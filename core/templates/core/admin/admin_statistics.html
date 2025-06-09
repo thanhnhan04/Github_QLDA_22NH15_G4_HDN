@@ -8,12 +8,18 @@
 {% endblock %}
 
 {% block admin_content %}
-<div class="container-fluid py-5 hero-section mb-4">
+<div class="container-fluid py-5 hero-section mb-4" style="background: linear-gradient(90deg, #ff7300 0%, #ffb347 100%); border-radius: 32px; margin-top: 24px;">
+    <div class="container">
+        <h1 class="display-4 text-center mb-2 statistics-title" style="color:#fff !important; font-weight:800; letter-spacing:1px; text-shadow:0 2px 12px rgba(0,0,0,0.10) !important; font-size:3.5rem !important;">Thống Kê Hệ Thống</h1>
+        <p class="lead text-center mb-0 statistics-desc" style="color:#fff !important; opacity:0.92; font-size:1.25rem; text-shadow:0 2px 8px rgba(0,0,0,0.10) !important;">Tổng quan hoạt động kinh doanh</p>
+    </div>
+</div>
+<!-- <div class="container-fluid py-5 hero-section mb-4">
     <div class="container">
         <h1 class="display-4 text-center mb-4 text-white">Thống Kê Hệ Thống</h1>
         <p class="lead text-center mb-0 text-white-50">Tổng quan hoạt động kinh doanh</p>
     </div>
-</div>
+</div> -->
 
 <div class="container">
     <!-- Overview Cards -->
@@ -325,6 +331,17 @@ document.addEventListener('DOMContentLoaded', function() {
 .badge {
     font-weight: 500;
     padding: 0.5em 1em;
+}
+
+.statistics-title {
+    color: #fff !important;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.10) !important;
+    font-size: 3.5rem !important;
+}
+
+.statistics-desc {
+    color: #fff !important;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.10) !important;
 }
 
 @media (max-width: 768px) {

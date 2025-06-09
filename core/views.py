@@ -30,6 +30,18 @@ def admin_home(request):
     for order in delivered_orders:
         admin_notifications.append(f"Đơn hàng #{order.id} đã giao thành công.")
 
+    # Thống kê sản phẩm: tất cả sản phẩm đang bán (tên, giá)
+    product_stats = list(Product.objects.filter(is_available=True).values_list('name', 'price'))
+    # Sản phẩm bán chạy nhất: top 5 theo số lượng đã bán (chỉ tính đơn hàng đã giao)
+    from django.db.models import Sum, Q
+    top_products = (
+        Product.objects.annotate(
+            sold=Sum('orderitem__quantity', filter=Q(orderitem__order__status='delivered'))
+        )
+        .filter(sold__gt=0)
+        .order_by('-sold')[:5]
+    )
+
     return render(request, 'core/admin/admin_home.html', {
         'total_products': total_products,
         'total_orders': total_orders,
@@ -37,4 +49,6 @@ def admin_home(request):
         'total_users': total_users,
         'is_admin_page': True,
         'admin_notifications': admin_notifications,
+        'product_stats': product_stats,
+        'top_products': top_products,
     })

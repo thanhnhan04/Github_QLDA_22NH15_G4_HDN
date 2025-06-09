@@ -1,0 +1,27 @@
+{# Partial table giỏ hàng dùng chung #}
+<table class="table align-middle table-hover table-admin">
+    <thead class="table-light sticky-top">
+        <tr>
+            <th>Ảnh</th>
+            <th>Tên món</th>
+            <th>Giá</th>
+            <th>Số lượng</th>
+            <th>Thành tiền</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in cart.items.all %}
+        <tr>
+            <td><img src="{{ item.product_image_url }}" alt="{{ item.product_name }}" class="rounded-3 shadow-sm" style="width: 48px; height: 48px; object-fit: cover;"></td>
+            <td>{{ item.product_name }}</td>
+            <td>{{ item.price|floatformat:0 }} đ</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.total_price|floatformat:0 }} đ</td>
+            <td><!-- Hành động --></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center">Giỏ hàng trống.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>

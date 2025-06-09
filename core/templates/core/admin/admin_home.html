@@ -3,204 +3,206 @@
 {% block title %}Bảng Điều Khiển Quản Trị{% endblock %}
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
-{% block admin_content %}
-<div class="admin-dashboard-bg py-5 mb-4">
-    <div class="container">
-        <h1 class="display-4 text-center mb-3 text-white fw-bold" style="letter-spacing:1px;">Bảng Điều Khiển</h1>
-        <p class="lead text-center mb-0 text-white-50">Tổng quan & truy cập nhanh các chức năng quản lý</p>
-    </div>
-</div>
-<div class="container">
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="dashboard-card card border-0 shadow-lg text-center h-100 animate__animated animate__fadeInUp" data-bs-toggle="tooltip" data-bs-title="Tổng số sản phẩm đang bán">
-                <div class="card-body py-4">
-                    <div class="dashboard-icon mb-3 bg-gradient-primary animate-icon"><i class="fas fa-boxes fa-2x"></i></div>
-                    <h2 class="mb-0 fw-bold text-primary animated-counter" data-count="{{ total_products }}">0</h2>
-                    <div class="text-muted mb-2">Sản phẩm</div>
-                    <a href="{% url 'admin_products' %}" class="btn btn-gradient-primary btn-lg w-100 mt-2">Quản lý sản phẩm</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="dashboard-card card border-0 shadow-lg text-center h-100 animate__animated animate__fadeInUp animate__delay-1s" data-bs-toggle="tooltip" data-bs-title="Tổng số đơn hàng hệ thống">
-                <div class="card-body py-4">
-                    <div class="dashboard-icon mb-3 bg-gradient-success animate-icon"><i class="fas fa-clipboard-list fa-2x"></i></div>
-                    <h2 class="mb-0 fw-bold text-success animated-counter" data-count="{{ total_orders }}">0</h2>
-                    <div class="text-muted mb-2">Đơn hàng</div>
-                    <a href="{% url 'admin_order_list' %}" class="btn btn-gradient-success btn-lg w-100 mt-2">Quản lý đơn hàng</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="dashboard-card card border-0 shadow-lg text-center h-100 animate__animated animate__fadeInUp animate__delay-2s" data-bs-toggle="tooltip" data-bs-title="Tổng số khách hàng">
-                <div class="card-body py-4">
-                    <div class="dashboard-icon mb-3 bg-gradient-info animate-icon"><i class="fas fa-users fa-2x"></i></div>
-                    <h2 class="mb-0 fw-bold text-info animated-counter" data-count="{{ total_users }}">0</h2>
-                    <div class="text-muted mb-2">Người dùng</div>
-                    <a href="{% url 'admin_customers' %}" class="btn btn-gradient-info btn-lg w-100 mt-2">Quản lý người dùng</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="dashboard-card card border-0 shadow-lg text-center h-100 animate__animated animate__fadeInUp animate__delay-3s" data-bs-toggle="tooltip" data-bs-title="Tổng doanh thu từ đơn hàng đã giao">
-                <div class="card-body py-4">
-                    <div class="dashboard-icon mb-3 bg-gradient-warning animate-icon"><i class="fas fa-money-bill-wave fa-2x"></i></div>
-                    <h2 class="mb-0 fw-bold text-warning animated-counter" data-count="{{ total_revenue|floatformat:0 }}">0</h2>
-                    <div class="text-muted mb-2">Tổng doanh thu</div>
-                    <a href="{% url 'admin_statistics' %}" class="btn btn-gradient-warning btn-lg w-100 mt-2">Xem chi tiết</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- <div class="row mb-4">
-        <div class="col-md-8 mx-auto">
-            <div class="card border-0 shadow-lg rounded-4">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3 text-gradient-primary">Biểu đồ doanh thu (demo)</h5>
-                    <canvas id="revenueChart" height="120"></canvas>
-                </div>
-            </div>
-        </div>
-    </div> -->
-</div>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <style>
-.admin-dashboard-bg {
-    background: linear-gradient(120deg, #ff512f 0%, #f09819 100%);
-    border-radius: 0 0 32px 32px;
-    box-shadow: 0 8px 32px rgba(255,61,0,0.08);
-    animation: gradientMove 8s ease-in-out infinite alternate;
+body {
+    background: #fff7ec;
 }
-@keyframes gradientMove {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 100% 50%; }
+.dashboard-cards {
+    display: flex;
+    gap: 28px;
+    margin-bottom: 0;
+    margin-top: 0;
 }
 .dashboard-card {
-    border-radius: 18px;
-    background: #fff;
-    transition: box-shadow 0.2s, transform 0.2s;
-    cursor: pointer;
+    flex: 1;
+    background: linear-gradient(135deg, #ffb347 0%, #ff7300 100%);
+    border-radius: 22px;
+    box-shadow: 0 4px 24px rgba(255, 140, 0, 0.13);
+    padding: 36px 32px 28px 32px;
+    color: #fff;
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    border: 1.5px solid #ffe0b2;
 }
-.dashboard-card:hover {
-    box-shadow: 0 12px 32px rgba(255,61,0,0.16);
-    transform: translateY(-6px) scale(1.04);
+.dashboard-card.blue {
+    background: linear-gradient(135deg, #ff7300 0%, #ffd200 100%);
 }
-.dashboard-icon {
-    width: 64px;
-    height: 64px;
+.dashboard-card.cyan {
+    background: linear-gradient(135deg, #ffb347 0%, #ffd200 100%);
+    color: #ff7300;
+}
+.dashboard-card .card-icon {
+    position: absolute;
+    top: 28px;
+    right: 28px;
+    font-size: 2.4rem;
+    opacity: 0.18;
+}
+.dashboard-card .card-title {
+    font-size: 1.15rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+    color: #fff;
+}
+.dashboard-card .card-value {
+    font-size: 2.6rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #fff;
+}
+.dashboard-card .card-desc {
+    font-size: 1.05rem;
+    color: #fff7ec;
+    opacity: 0.85;
+}
+.dashboard-charts {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    margin: 0 auto 1rem auto;
-    font-size: 2.2rem;
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: transform 0.3s cubic-bezier(.68,-0.55,.27,1.55);
+    gap: 28px;
+    margin-top: 0;
 }
-.dashboard-card:hover .dashboard-icon {
-    transform: rotate(-12deg) scale(1.15);
+.dashboard-chart-box {
+    flex: 1;
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 4px 24px rgba(255, 140, 0, 0.10);
+    padding: 28px 28px 18px 28px;
+    min-width: 0;
+    border: 1.5px solid #ffe0b2;
 }
-.bg-gradient-primary {
-    background: linear-gradient(135deg, #ff512f 0%, #f09819 100%);
+.dashboard-chart-title {
+    font-size: 1.13rem;
+    font-weight: 600;
+    color: #ff7300;
+    margin-bottom: 14px;
 }
-.bg-gradient-success {
-    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-}
-.bg-gradient-info {
-    background: linear-gradient(135deg, #36d1c4 0%, #5b86e5 100%);
-}
-.bg-gradient-warning {
-    background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
-}
-.btn-gradient-primary {
-    background: linear-gradient(90deg, #ff512f 0%, #f09819 100%);
-    color: #fff;
-    border: none;
-}
-.btn-gradient-success {
-    background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
-    color: #fff;
-    border: none;
-}
-.btn-gradient-info {
-    background: linear-gradient(90deg, #36d1c4 0%, #5b86e5 100%);
-    color: #fff;
-    border: none;
-}
-.btn-gradient-warning {
-    background: linear-gradient(90deg, #f7971e 0%, #ffd200 100%);
-    color: #fff;
-    border: none;
-}
-.btn-gradient-primary:hover, .btn-gradient-success:hover, .btn-gradient-info:hover, .btn-gradient-warning:hover {
-    filter: brightness(0.95);
-    color: #fff;
-}
-.text-gradient-primary {
-    background: linear-gradient(90deg, #ff512f 0%, #f09819 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+@media (max-width: 1100px) {
+    .dashboard-cards, .dashboard-charts {
+        flex-direction: column;
+        gap: 18px;
+    }
+    .dashboard-card, .dashboard-chart-box {
+        padding: 24px 12px 18px 12px;
+    }
 }
 </style>
+{% endblock %}
+{% block admin_content %}
+<div class="container-fluid py-5">
+    <div class="container">
+        <h1 class="display-4 text-center mb-4 text-white fw-bold" style="letter-spacing:1px; text-shadow:0 2px 12px rgba(255,140,0,0.10); background:linear-gradient(90deg,#ff7300 0%,#ffb347 100%); border-radius:32px;">Bảng Điều Khiển Quản Trị</h1>
+        <div class="dashboard-cards">
+            <div class="dashboard-card">
+                <div class="card-title">Tổng Sản Phẩm</div>
+                <div class="card-value">{{ total_products }}</div>
+                <div class="card-desc">Sản phẩm đang kinh doanh</div>
+                <div class="card-icon"><i class="fas fa-box"></i></div>
+            </div>
+            <div class="dashboard-card blue">
+                <div class="card-title">Tổng Đơn Hàng</div>
+                <div class="card-value">{{ total_orders }}</div>
+                <div class="card-desc">Tất cả đơn hàng</div>
+                <div class="card-icon"><i class="fas fa-shopping-cart"></i></div>
+            </div>
+            <div class="dashboard-card cyan">
+                <div class="card-title">Tổng Khách Hàng</div>
+                <div class="card-value">{{ total_users }}</div>
+                <div class="card-desc">Khách hàng đã đăng ký</div>
+                <div class="card-icon"><i class="fas fa-user-friends"></i></div>
+            </div>
+            <div class="dashboard-card" style="background:linear-gradient(135deg,#ff7300 0%,#ffd200 100%);">
+                <div class="card-title">Tổng Doanh Thu</div>
+                <div class="card-value">{{ total_revenue|format_price }}</div>
+                <div class="card-desc">Tổng doanh thu đã bán</div>
+                <div class="card-icon"><i class="fas fa-coins"></i></div>
+            </div>
+        </div>
+        <div class="dashboard-charts mt-4">
+            <div class="dashboard-chart-box">
+                <div class="dashboard-chart-title">Product Statistics</div>
+                <canvas id="productBarChart" height="180"></canvas>
+            </div>
+            <div class="dashboard-chart-box">
+                <div class="dashboard-chart-title">Best-Selling Products</div>
+                <canvas id="productPieChart" height="180"></canvas>
+                <!-- Danh sách top sản phẩm bán chạy kèm ảnh -->
+                <div class="table-responsive mt-3">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Hình ảnh</th>
+                                <th>Tên món</th>
+                                <th class="text-end">Đã bán</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in top_products %}
+                            <tr>
+                                <td style="width:60px">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded-3 shadow-sm" style="width: 48px; height: 48px; object-fit: cover;">
+                                    {% elif product.image_url %}
+                                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="rounded-3 shadow-sm" style="width: 48px; height: 48px; object-fit: cover;">
+                                    {% else %}
+                                        <span class="text-muted">No image</span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold">{{ product.name }}</td>
+                                <td class="text-end">{{ product.sold|default:0 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
-// Animated counter
-function animateCounter(el) {
-    const target = parseInt(el.getAttribute('data-count'));
-    let count = 0;
-    const step = Math.ceil(target / 40);
-    const update = () => {
-        count += step;
-        if (count >= target) {
-            el.textContent = target.toLocaleString('vi-VN');
-        } else {
-            el.textContent = count.toLocaleString('vi-VN');
-            requestAnimationFrame(update);
+// Bar chart: Product Statistics (name, price)
+const productStatsLabels = [{% for name, price in product_stats %}'{{ name }}',{% endfor %}];
+const productStatsData = [{% for name, price in product_stats %}{{ price }},{% endfor %}];
+const ctxBar = document.getElementById('productBarChart').getContext('2d');
+new Chart(ctxBar, {
+    type: 'bar',
+    data: {
+        labels: productStatsLabels,
+        datasets: [{
+            label: 'Giá sản phẩm (VNĐ)',
+            data: productStatsData,
+            backgroundColor: 'rgba(255, 140, 0, 0.4)',
+            borderColor: '#ff7300',
+            borderWidth: 2,
+            borderRadius: 8,
+        }]
+    },
+    options: {
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true }
         }
-    };
-    update();
-}
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.animated-counter').forEach(animateCounter);
-    // Tooltip
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-        new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-    // Chart.js demo
-    var ctx = document.getElementById('revenueChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
-            datasets: [{
-                label: 'Doanh thu',
-                data: [120, 190, 300, 500, 200, 300, 400],
-                backgroundColor: 'rgba(255,99,71,0.7)',
-                borderRadius: 8,
-                maxBarThickness: 32
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return value.toLocaleString('vi-VN') + ' đ';
-                        }
-                    }
-                }
-            }
-        }
-    });
+    }
+});
+// Pie chart: Best-Selling Products (name, sold)
+const topProductsLabels = [{% for product in top_products %}'{{ product.name }}',{% endfor %}];
+const topProductsData = [{% for product in top_products %}{{ product.sold|default:0 }},{% endfor %}];
+const ctxPie = document.getElementById('productPieChart').getContext('2d');
+new Chart(ctxPie, {
+    type: 'doughnut',
+    data: {
+        labels: topProductsLabels,
+        datasets: [{
+            data: topProductsData,
+            backgroundColor: [
+                '#ff7300', '#ffb347', '#ffd200', '#ffe0b2', '#fff7ec', '#fd7e14', '#ff9800', '#ffc107'
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        cutout: '70%',
+        plugins: { legend: { position: 'bottom' } }
+    }
 });
 </script>
 {% endblock %}

@@ -1,0 +1,41 @@
+{# Partial table khuyến mãi dùng chung #}
+<table class="table table-hover table-admin">
+    <thead class="table-light sticky-top">
+        <tr>
+            <th>Mã</th>
+            <th>Mô tả</th>
+            <th>Giảm (%)</th>
+            <th>Giảm (VNĐ)</th>
+            <th>Đơn tối thiểu</th>
+            <th>Hiệu lực</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for promo in promotions %}
+        <tr>
+            <td>{{ promo.code }}</td>
+            <td>{{ promo.description }}</td>
+            <td>{{ promo.discount_percent|default:'-' }}</td>
+            <td>{{ promo.discount_amount|default:'-' }}</td>
+            <td>{{ promo.min_order_total|default:'0' }}</td>
+            <td>{{ promo.start_date|date:'d/m/Y' }} - {{ promo.end_date|date:'d/m/Y' }}</td>
+            <td>
+                {% if not promo.is_active %}
+                    <span class="badge bg-secondary">Tắt</span>
+                {% elif promo.end_date < now %}
+                    <span class="badge bg-danger">Hết hạn</span>
+                {% elif promo.start_date > now %}
+                    <span class="badge bg-warning text-dark">Chưa bắt đầu</span>
+                {% else %}
+                    <span class="badge bg-success">Đang chạy</span>
+                {% endif %}
+            </td>
+            <td><!-- Hành động --></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center">Chưa có khuyến mãi nào.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -1,6 +1,12 @@
 {% extends 'core/admin/admin_base.html' %}
 {% block title %}{% if action == 'add' %}Thêm Khuyến Mãi{% elif action == 'edit' %}Sửa Khuyến Mãi{% else %}Xóa Khuyến Mãi{% endif %}{% endblock %}
 {% block admin_content %}
+<div class="container-fluid py-5 hero-section mb-4" style="background: linear-gradient(90deg, #ff6126 0%, #fbb034 100%); border-radius: 40px; margin-top: 24px;">
+    <div class="container">
+        <h1 class="display-4 text-center mb-2 statistics-title" style="color:#fff !important; font-weight:800; letter-spacing:1px; text-shadow:0 2px 12px rgba(0,0,0,0.10) !important; font-size:3.5rem !important;">Quản Lý Khuyến mãi</h1>
+        <p class="lead text-center mb-0 statistics-desc" style="color:#fff !important; opacity:0.92; font-size:1.25rem; text-shadow:0 2px 8px rgba(0,0,0,0.10) !important;">Xem và cập nhật các mã khuyến mãi</p>
+    </div>
+</div>
 <div class="container py-5">
     <div class="card shadow border-0 mx-auto" style="max-width: 600px;">
         <div class="card-body">

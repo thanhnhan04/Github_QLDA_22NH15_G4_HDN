@@ -1,4 +1,4 @@
-{% extends 'core/base.html' %}
+{% extends 'core/base_customer.html' %}
 {% load core_extras %}
 
 {% block title %}Thực đơn - Tasty Food{% endblock %}
@@ -11,10 +11,11 @@
     </div>
 </div>
 
-<div class="container">
-    <div class="row mb-4">
+<div class="container position-relative">
+    <div class="product-blob-bg position-absolute top-0 start-0 w-100 h-100" style="z-index:0; pointer-events:none;"></div>
+    <div class="row mb-4 position-relative" style="z-index:1;">
         <div class="col-md-3">
-            <div class="card category-card shadow-sm sticky-md-top" style="top: 2rem; z-index: 1;">
+            <div class="card category-card shadow-sm sticky-md-top" style="top: 2rem; z-index: 2;">
                 <div class="card-header">
                     <h5 class="mb-0">
                         <i class="fas fa-list-ul me-2"></i>Danh Mục
@@ -34,43 +35,39 @@
                 </div>
             </div>
         </div>
-        
         <div class="col-md-9">
-            <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-5">
                 {% for product in products %}
                 <div class="col">
-                    <div class="card h-100 shadow-sm hover-elevation product-card">
-                        <div class="position-relative product-image-container">
-                            <img src="{% if product.image %}{{ product.image.url }}{% elif product.image_url %}{{ product.image_url }}{% else %}https://via.placeholder.com/400x200?text=No+Image{% endif %}" class="card-img-top product-image" alt="{{ product.name }}" 
-                                 onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
-                            <div class="position-absolute top-0 end-0 p-2">
-                                <span class="badge price-badge">{{ product.price|format_price }}</span>
-                            </div>
-                            <div class="product-overlay">
-                                <button type="button" class="btn btn-light btn-sm product-detail-btn" 
-                                        data-bs-toggle="modal" data-bs-target="#productModal{{ product.id }}">
+                    <div class="product-modern-card card h-100 shadow-lg border-0 position-relative overflow-hidden">
+                        <div class="product-modern-img-wrap position-relative">
+                            <img src="{% if product.image %}{{ product.image.url }}{% elif product.image_url %}{{ product.image_url }}{% else %}https://via.placeholder.com/400x250?text=No+Image{% endif %}" class="product-modern-img w-100" alt="{{ product.name }}" onerror="this.src='https://via.placeholder.com/400x250?text=No+Image'">
+                            <div class="product-modern-overlay d-flex flex-column justify-content-center align-items-center">
+                                <div class="mb-2">
+                                    <span class="badge product-modern-price">{{ product.price|format_price }}</span>
+                                </div>
+                                <button type="button" class="btn btn-light btn-lg rounded-pill px-4 fw-bold product-detail-btn animated-btn" data-bs-toggle="modal" data-bs-target="#productModal{{ product.id }}">
                                     <i class="fas fa-eye"></i> Xem chi tiết
                                 </button>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <h5 class="card-title product-title">{{ product.name }}</h5>
-                            <p class="card-text text-muted">{{ product.description|truncatewords:15 }}</p>
+                        <div class="card-body text-center">
+                            <h5 class="card-title mb-2 animated-gradient-text">{{ product.name }}</h5>
+                            <p class="card-text text-muted small">{{ product.description|truncatewords:15 }}</p>
                         </div>
-                        <div class="card-footer bg-white border-0 pb-3">
+                        <div class="card-footer bg-white border-0 pb-4 text-center">
                             {% if user.is_authenticated %}
                                 {% if user.role == 'admin' %}
                                 <div class="btn-group w-100">
                                     <a href="{% url 'product_edit' product.id %}" class="btn btn-outline-primary">
                                         <i class="fas fa-edit"></i> Sửa
                                     </a>
-                                    <a href="{% url 'product_delete' product.id %}" class="btn btn-outline-danger" 
-                                       onclick="return confirm('Bạn có chắc muốn xóa món {{ product.name }}?')">
+                                    <a href="{% url 'product_delete' product.id %}" class="btn btn-outline-danger" onclick="return confirm('Bạn có chắc muốn xóa món {{ product.name }}?')">
                                         <i class="fas fa-trash"></i> Xóa
                                     </a>
                                 </div>
                                 {% else %}
-                                <a href="{% url 'cart_add' product.id %}" class="btn btn-primary w-100 add-to-cart-btn">
+                                <a href="{% url 'cart_add' product.id %}" class="btn btn-lg btn-gradient-orange w-100 add-to-cart-btn animated-btn">
                                     <i class="fas fa-cart-plus me-2"></i>Thêm vào giỏ
                                 </a>
                                 {% endif %}
@@ -82,33 +79,30 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Modal for product details -->
                 <div class="modal fade" id="productModal{{ product.id }}" tabindex="-1">
                     <div class="modal-dialog modal-lg modal-dialog-centered">
                         <div class="modal-content border-0">
                             <div class="modal-header border-0">
-                                <h4 class="modal-title" style="color: var(--primary-red);">{{ product.name }}</h4>
+                                <h4 class="modal-title animated-gradient-text" style="color: var(--primary-red);">{{ product.name }}</h4>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <img src="{% if product.image %}{{ product.image.url }}{% elif product.image_url %}{{ product.image_url }}{% else %}https://via.placeholder.com/400x300?text=No+Image{% endif %}" class="img-fluid rounded-3 shadow" 
-                                             alt="{{ product.name }}"
-                                             onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+                                        <img src="{% if product.image %}{{ product.image.url }}{% elif product.image_url %}{{ product.image_url }}{% else %}https://via.placeholder.com/400x300?text=No+Image{% endif %}" class="img-fluid rounded-3 shadow" alt="{{ product.name }}" onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
                                     </div>
                                     <div class="col-md-6">
                                         <h5 class="mb-3">Chi tiết món ăn</h5>
                                         <p class="text-muted">{{ product.description }}</p>
                                         <div class="d-flex justify-content-between align-items-center mb-3">
                                             <span class="h5 mb-0">Giá:</span>
-                                            <span class="price-badge h5 mb-0">{{ product.price|format_price }}</span>
+                                            <span class="product-modern-price h5 mb-0">{{ product.price|format_price }}</span>
                                         </div>
                                         <hr class="my-4">
                                         {% if user.is_authenticated and not user.role == 'admin' %}
                                         <div class="d-grid">
-                                            <a href="{% url 'cart_add' product.id %}" class="btn btn-lg btn-primary add-to-cart-btn">
+                                            <a href="{% url 'cart_add' product.id %}" class="btn btn-lg btn-gradient-orange add-to-cart-btn animated-btn">
                                                 <i class="fas fa-cart-plus me-2"></i>Thêm vào giỏ
                                             </a>
                                         </div>
@@ -144,78 +138,153 @@
 {% endif %}
 
 <style>
-    .product-card {
-        overflow: hidden;
-    }
-    
-    .product-image-container {
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .product-image {
-        height: 200px;
-        object-fit: cover;
-        transition: all 0.5s ease;
-    }
-    
-    .product-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: all 0.3s ease;
-    }
-    
-    .product-card:hover .product-overlay {
-        opacity: 1;
-    }
-    
-    .product-card:hover .product-image {
-        transform: scale(1.1);
-    }
-    
-    .product-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: #333;
-    }
-    
-    .price-badge {
-        background-color: var(--primary-red) !important;
-        color: white;
-        padding: 0.5rem 1rem;
-        font-weight: 600;
-        border-radius: 20px;
-    }
-    
-    .add-to-cart-btn {
-        transition: all 0.3s ease;
-    }
-    
-    .add-to-cart-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .modal-content {
-        border-radius: 15px;
-    }
-    
-    @media (max-width: 768px) {
-        .product-overlay {
-            opacity: 1;
-            background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%);
-            align-items: flex-end;
-            padding: 1rem;
-        }
-    }
+  .product-blob-bg {
+    z-index: 0;
+    pointer-events: none;
+  }
+  .product-blob-bg .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.35;
+    animation: blobMove 16s infinite alternate;
+    pointer-events: none;
+  }
+  .product-blob-bg .blob1 {
+    width: 600px; height: 600px;
+    left: 2vw; top: 8vh;
+    background: radial-gradient(circle at 30% 30%, #FF9800 0%, #FFE082 80%);
+    animation-delay: 0s;
+  }
+  .product-blob-bg .blob2 {
+    width: 400px; height: 400px;
+    right: 8vw; top: 18vh;
+    background: radial-gradient(circle at 70% 30%, #FFA000 0%, #FFFDE7 80%);
+    animation-delay: 3s;
+  }
+  .product-blob-bg .blob3 {
+    width: 350px; height: 350px;
+    left: 20vw; bottom: 6vh;
+    background: radial-gradient(circle at 50% 70%, #FF3D00 0%, #FFB300 80%);
+    animation-delay: 6s;
+  }
+  .product-blob-bg .blob4 {
+    width: 300px; height: 300px;
+    right: 18vw; bottom: 10vh;
+    background: radial-gradient(circle at 60% 60%, #FFA000 0%, #FFF8E1 80%);
+    animation-delay: 9s;
+  }
+  @keyframes blobMove {
+    0% { transform: scale(1) translateY(0) translateX(0); }
+    100% { transform: scale(1.18) translateY(40px) translateX(60px); }
+  }
+  .product-modern-card {
+    border-radius: 2.2rem;
+    box-shadow: 0 8px 32px rgba(255,61,0,0.10);
+    transition: transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s;
+    overflow: hidden;
+    background: #fff;
+    position: relative;
+  }
+  .product-modern-card:hover {
+    transform: scale(1.04) translateY(-6px);
+    box-shadow: 0 16px 48px rgba(255,61,0,0.18);
+    z-index: 2;
+  }
+  .product-modern-img-wrap {
+    position: relative;
+    overflow: hidden;
+    height: 240px;
+    background: #fffbe7;
+    border-bottom: 1px solid #ffe082;
+  }
+  .product-modern-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0 0 2rem 2rem;
+    transition: transform 0.4s cubic-bezier(.4,2,.6,1);
+  }
+  .product-modern-card:hover .product-modern-img {
+    transform: scale(1.08);
+  }
+  .product-modern-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(120deg, rgba(255,61,0,0.10) 0%, rgba(255,193,7,0.10) 100%);
+    opacity: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s;
+    z-index: 2;
+  }
+  .product-modern-card:hover .product-modern-overlay {
+    opacity: 1;
+  }
+  .product-modern-price {
+    background: linear-gradient(90deg, #FF3D00, #FFA000);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-radius: 1.5rem;
+    padding: 0.5rem 1.2rem;
+    box-shadow: 0 2px 8px rgba(255,193,7,0.10);
+  }
+  .btn-gradient-orange {
+    background: linear-gradient(90deg, #FFA000, #FF3D00);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(255,160,0,0.10);
+  }
+  .btn-gradient-orange:hover {
+    background: linear-gradient(90deg, #FF3D00, #FFA000);
+    color: #fff;
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 8px 24px rgba(255,61,0,0.18);
+  }
+  .animated-gradient-text {
+    background: linear-gradient(90deg, #fffbe7, #ffe082, #FF3D00, #FFA000, #fffbe7);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-fill-color: transparent;
+    animation: gradientTextMove 3.5s ease-in-out infinite alternate;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+  @keyframes gradientTextMove {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+  .animated-btn {
+    transition: transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s;
+    box-shadow: 0 2px 8px rgba(255,160,0,0.10);
+    position: relative;
+    overflow: hidden;
+  }
+  .animated-btn:hover, .animated-btn:focus {
+    transform: scale(1.06) translateY(-2px) rotate(-1deg);
+    box-shadow: 0 8px 24px rgba(255,61,0,0.18);
+  }
+  @media (max-width: 991px) {
+    .product-modern-img-wrap { height: 180px; }
+    .product-modern-card { border-radius: 1.2rem; }
+  }
+  @media (max-width: 767px) {
+    .product-modern-img-wrap { height: 140px; }
+    .product-modern-card { border-radius: 0.8rem; }
+  }
 </style>
+<!-- Blobs for animated background -->
+<div class="product-blob-bg position-absolute top-0 start-0 w-100 h-100" style="z-index:0; pointer-events:none;">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+  <div class="blob blob4"></div>
+</div>
 {% endblock %}

@@ -1,0 +1,39 @@
+{# Partial table đơn hàng dùng chung #}
+<table class="table align-middle table-hover table-admin">
+    <thead class="table-light sticky-top">
+        <tr>
+            <th>Mã đơn</th>
+            <th>Khách hàng</th>
+            <th>Món ăn</th>
+            <th class="text-end">Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Thanh toán</th>
+            <th>Ngày đặt</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr class="order-row align-middle">
+            <td class="fw-bold">#{{ order.id }}</td>
+            <td>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-user-circle fa-lg me-2 text-muted"></i>
+                    <div>
+                        <div>{{ order.customer.username }}</div>
+                        <small class="text-muted">{{ order.customer.phone }}</small>
+                    </div>
+                </div>
+            </td>
+            <td>{{ order.items.all|join:', ' }}</td>
+            <td class="text-end">{{ order.total|floatformat:0 }} đ</td>
+            <td>{{ order.get_status_display }}</td>
+            <td>{{ order.get_payment_method_display }}</td>
+            <td>{{ order.created_at|date:'d/m/Y H:i' }}</td>
+            <td><!-- Hành động --></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center">Chưa có đơn hàng nào.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
