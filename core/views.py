@@ -3,8 +3,9 @@ print("core.views loaded")
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from django.db.models import Q, Sum  # Import Sum for aggregation
+from django.db.models import Q  # Import Q for filtering
 from .models import Product, Order, User, Message  # Ensure correct imports
+from django.db import models
 
 @staff_member_required
 def admin_home(request):
@@ -95,6 +96,7 @@ def admin_customer_support(request):
         'customers': customers,
         'selected_customer': selected_customer,
         'messages': messages,
+        'is_customer_support_page': True,  # Add context for template identification
     })
 
 
