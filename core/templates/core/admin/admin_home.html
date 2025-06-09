@@ -157,6 +157,17 @@ body {
             </div>
         </div>
     </div>
+    <div class="fixed-bottom text-end p-3">
+        {% if user.is_authenticated and user.role == 'customer' %}
+        <a href="{% url 'chat' %}" class="btn btn-primary btn-lg shadow">
+            <i class="fas fa-comments me-2"></i>Liên hệ chủ cửa hàng
+        </a>
+        {% elif user.is_authenticated and user.role == 'admin' %}
+        <a href="{% url 'admin_customer_support' %}" class="btn btn-warning btn-lg shadow">
+            <i class="fas fa-headset me-2"></i>Hỗ trợ khách hàng
+        </a>
+        {% endif %}
+    </div>
 </div>
 <script>
 // Bar chart: Product Statistics (name, price)

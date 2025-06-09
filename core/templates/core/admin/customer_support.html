@@ -1,0 +1,72 @@
+{% extends "core/base.html" %}
+{% block title %}Hỗ trợ khách hàng{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Hỗ trợ khách hàng</h2>
+    <div class="row">
+        <!-- Danh sách khách hàng -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-white">
+                    <strong>Khách hàng</strong>
+                </div>
+                <div class="list-group" style="max-height: 400px; overflow-y: auto;">
+                    {% if customers %}
+                        {% for customer in customers %}
+                            <a href="?customer_id={{ customer.id }}" class="list-group-item list-group-item-action {% if selected_customer and selected_customer.id == customer.id %}active{% endif %}">
+                                {{ customer.username }} ({{ customer.email }})
+                            </a>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted p-3">Chưa có khách hàng nào gửi tin nhắn.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Nội dung chat và gửi tin nhắn -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <strong>Chat với: 
+                        {% if selected_customer %}
+                            {{ selected_customer.username }}
+                        {% else %}
+                            <em>Chưa chọn khách hàng</em>
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div class="card-body" style="max-height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="d-flex {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %} mb-2">
+                                <div class="p-2 rounded shadow-sm {% if message.sender == request.user %}bg-primary text-white{% else %}bg-light border{% endif %}" style="max-width: 70%;">
+                                    {{ message.content|safe }}
+                                    <div class="text-muted mt-1 text-end" style="font-size: 0.75rem;">{{ message.timestamp|date:"H:i d/m/Y" }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">Không có tin nhắn nào để hiển thị.</p>
+                    {% endif %}
+                </div>
+
+                {% if selected_customer %}
+                <form id="reply-form" class="p-3 border-top" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="customer_id" value="{{ selected_customer.id }}">
+                    <div class="form-group">
+                        <textarea name="content" class="form-control" rows="3" placeholder="Nhập tin nhắn..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-2">Gửi</button>
+                </form>
+                {% else %}
+                    <p class="text-center text-muted mt-3">Vui lòng chọn khách hàng để trả lời tin nhắn.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

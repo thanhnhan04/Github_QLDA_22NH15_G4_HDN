@@ -1,8 +1,10 @@
 print("core.views loaded")
+
 from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render
-from django.db import models
-from .models import Product, Order, User  # Đảm bảo import đúng từ core.models
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.db.models import Q, Sum  # Import Sum for aggregation
+from .models import Product, Order, User, Message  # Ensure correct imports
 
 @staff_member_required
 def admin_home(request):
@@ -52,3 +54,63 @@ def admin_home(request):
         'product_stats': product_stats,
         'top_products': top_products,
     })
+
+@staff_member_required
+def admin_customer_support(request):
+    admin_users = User.objects.filter(role='admin')
+
+    # Lấy danh sách customer đã gửi tin nhắn đến bất kỳ admin nào
+    customer_ids = Message.objects.filter(receiver__in=admin_users).values_list('sender', flat=True).distinct()
+    customers = User.objects.filter(id__in=customer_ids)
+
+    customer_id = request.GET.get('customer_id')
+    selected_customer = None
+    messages = []
+
+    if customer_id:
+        try:
+            selected_customer = User.objects.get(id=customer_id)
+            # Lấy tất cả tin nhắn giữa selected_customer và bất kỳ admin nào
+            messages = Message.objects.filter(
+                Q(sender=selected_customer, receiver__in=admin_users) |
+                Q(sender__in=admin_users, receiver=selected_customer)
+            ).order_by('timestamp')
+        except User.DoesNotExist:
+            selected_customer = None
+            messages = []
+
+    # Xử lý gửi tin nhắn từ admin đến selected_customer
+    if request.method == 'POST':
+        customer_id_post = request.POST.get('customer_id')
+        content = request.POST.get('content', '').strip()
+        if customer_id_post and content:
+            try:
+                customer = User.objects.get(id=customer_id_post)
+                Message.objects.create(sender=request.user, receiver=customer, content=content)
+            except User.DoesNotExist:
+                pass
+        return redirect(f"{request.path}?customer_id={customer_id_post}")
+
+    return render(request, 'core/admin/customer_support.html', {
+        'customers': customers,
+        'selected_customer': selected_customer,
+        'messages': messages,
+    })
+
+
+@login_required
+def chat(request):
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        if content:
+            admin_user = User.objects.filter(role='admin').first()
+            if admin_user:
+                Message.objects.create(sender=request.user, receiver=admin_user, content=content)
+        return redirect('chat')
+
+    messages = Message.objects.filter(
+        Q(sender=request.user) | Q(receiver=request.user)
+    ).order_by('timestamp')
+
+    return render(request, 'core/chat.html', {'messages': messages})
+
