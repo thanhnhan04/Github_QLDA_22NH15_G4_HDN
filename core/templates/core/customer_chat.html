@@ -1,0 +1,140 @@
+{% extends "core/base_customer.html" %}
+{% block title %}Hỗ Trợ Khách Hàng{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5 hero-section mb-4">
+    <div class="container">
+        <h1 class="display-4 text-center mb-4 text-white">Hỗ Trợ Khách Hàng</h1>
+        <p class="lead text-center mb-0 text-white-50">Chat với nhân viên hỗ trợ</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Main chat -->
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-headset me-2"></i>Chat với nhân viên hỗ trợ
+                        </h5>
+                        <button class="btn btn-outline-secondary btn-sm" id="refreshChat">
+                            <i class="fas fa-sync-alt"></i> Làm mới
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body chat-container" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+                    <div id="chat-messages">
+                        {% for message in messages %}
+                        <div class="d-flex mb-3 {% if message.sender == request.user %}justify-content-end{% endif %}">
+                            <div class="{% if message.sender == request.user %}bg-primary text-white{% else %}bg-white{% endif %} shadow-sm rounded p-3" style="max-width: 75%;">
+                                {% if message.sender != request.user %}
+                                <div class="fw-bold {% if message.sender.role == 'admin' %}text-primary{% endif %} mb-1">
+                                    <i class="fas fa-headset me-1"></i>{{ message.sender.username }}
+                                </div>
+                                {% endif %}
+                                <div>{{ message.content }}</div>
+                                <small class="{% if message.sender == request.user %}text-white-50{% else %}text-muted{% endif %} d-block text-end">
+                                    {{ message.timestamp|date:"H:i" }}
+                                    {% if message.sender == request.user %}
+                                        {% if message.is_read %}
+                                        <i class="fas fa-check-double ms-1" title="Đã xem"></i>
+                                        {% else %}
+                                        <i class="fas fa-check ms-1" title="Đã gửi"></i>
+                                        {% endif %}
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center p-5">
+                            <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Gửi tin nhắn để bắt đầu trò chuyện với nhân viên hỗ trợ</h5>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white">
+                    <form id="chat-form" method="post" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" name="content" class="form-control" placeholder="Nhập tin nhắn..." required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i> Gửi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Online admins sidebar -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-headset me-2"></i>Nhân viên đang online
+                        <span class="badge bg-success float-end">{{ online_admins.count }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for admin in online_admins %}
+                        <div class="list-group-item">
+                            <i class="fas fa-circle text-success me-2" style="font-size: 0.5rem;"></i>
+                            {{ admin.username }}
+                        </div>
+                        {% empty %}
+                        <div class="text-center p-3">
+                            <i class="fas fa-clock text-muted"></i>
+                            <p class="text-muted mb-0">Hiện không có nhân viên trực tuyến</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support info -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle me-2"></i>Lưu ý
+                    </h5>
+                    <ul class="mb-0">
+                        <li>Thời gian phản hồi thông thường trong vòng 5 phút</li>
+                        <li>Nhân viên hỗ trợ làm việc từ 8:00 - 22:00 hàng ngày</li>
+                        <li>Ngoài giờ làm việc, vui lòng để lại tin nhắn, chúng tôi sẽ phản hồi trong thời gian sớm nhất</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+    // Auto scroll to bottom of chat
+    function scrollToBottom() {
+        const chatContainer = document.querySelector('.chat-container');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Scroll to bottom on page load
+    document.addEventListener('DOMContentLoaded', scrollToBottom);
+
+    // Setup refresh button
+    document.getElementById('refreshChat').addEventListener('click', function() {
+        location.reload();
+    });
+
+    // Auto refresh chat every 30 seconds
+    setInterval(function() {
+        location.reload();
+    }, 30000);
+</script>
+{% endblock %}
+
+{% endblock %}

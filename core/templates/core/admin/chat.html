@@ -1,0 +1,184 @@
+{% extends "core/admin/admin_base.html" %}
+{% block title %}Hỗ Trợ Khách Hàng{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid py-5 hero-section mb-4" style="background: linear-gradient(90deg, #ff6126 0%, #fbb034 100%); border-radius: 40px; margin-top: 24px;">
+    <div class="container">
+        <h1 class="display-4 text-center mb-2 statistics-title" style="color:#fff !important; font-weight:800; letter-spacing:1px; text-shadow:0 2px 12px rgba(0,0,0,0.10) !important; font-size:3.5rem !important;">Hỗ Trợ Khách Hàng</h1>
+        <p class="lead text-center mb-0 statistics-desc" style="color:#fff !important; opacity:0.92; font-size:1.25rem; text-shadow:0 2px 8px rgba(0,0,0,0.10) !important;">Trả lời và hỗ trợ khách hàng</p>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Danh sách người dùng -->
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Danh sách khách hàng
+                        <span class="badge bg-primary float-end">{{ customers.count }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for customer in customers %}
+                        <a href="?customer_id={{ customer.id }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if selected_customer.id == customer.id %}active{% endif %}">
+                            <div>
+                                <i class="fas fa-user-circle me-2"></i>
+                                {{ customer.username }}
+                                <small class="d-block text-muted">{{ customer.email }}</small>
+                            </div>
+                            {% if unread_counts|get_item:customer.id > 0 %}
+                            <span class="badge bg-danger rounded-pill">{{ unread_counts|get_item:customer.id }}</span>
+                            {% endif %}
+                        </a>
+                        {% empty %}
+                        <div class="text-center p-3">
+                            <i class="fas fa-inbox fa-2x mb-2 text-muted"></i>
+                            <p class="text-muted mb-0">Chưa có tin nhắn nào</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Online Admins -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-headset me-2"></i>Admin đang online
+                        <span class="badge bg-success float-end">{{ online_admins.count }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for admin in online_admins %}
+                        <div class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-circle text-success me-2" style="font-size: 0.5rem;"></i>
+                            <div>
+                                {{ admin.username }}
+                                {% if admin == request.user %}
+                                <span class="badge bg-info ms-2">Bạn</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khung chat -->
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if selected_customer %}
+                            <h5 class="mb-0">
+                                <i class="fas fa-comments me-2"></i>
+                                Chat với {{ selected_customer.username }}
+                            </h5>
+                            <small class="text-muted">{{ selected_customer.email }}</small>
+                            {% else %}
+                            <h5 class="mb-0 text-muted">
+                                <i class="fas fa-comments me-2"></i>
+                                Chọn khách hàng để bắt đầu chat
+                            </h5>
+                            {% endif %}
+                        </div>
+                        {% if selected_customer %}
+                        <button class="btn btn-outline-secondary btn-sm" id="refreshChat">
+                            <i class="fas fa-sync-alt"></i> Làm mới
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-body chat-container" style="height: 500px; overflow-y: auto; background-color: #f8f9fa;">
+                    <div id="chat-messages">
+                        {% if not selected_customer %}
+                        <div class="text-center p-5">
+                            <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Chọn một khách hàng để bắt đầu chat</h5>
+                        </div>
+                        {% else %}
+                            {% for message in chat_messages %}
+                            <div class="d-flex mb-3 {% if message.sender == request.user %}justify-content-end{% endif %}">
+                                <div class="{% if message.sender == request.user %}bg-primary text-white{% else %}bg-white{% endif %} shadow-sm rounded p-3" style="max-width: 75%;">
+                                    {% if message.sender != request.user %}
+                                    <div class="fw-bold text-primary mb-1">
+                                        {% if message.sender.role == 'admin' %}
+                                        <i class="fas fa-headset me-1"></i>
+                                        {% endif %}
+                                        {{ message.sender.username }}
+                                    </div>
+                                    {% endif %}
+                                    <div>{{ message.content }}</div>
+                                    <small class="{% if message.sender == request.user %}text-white-50{% else %}text-muted{% endif %} d-block text-end">
+                                        {{ message.timestamp|date:"H:i" }}
+                                        {% if message.is_read and message.sender == request.user %}
+                                        <i class="fas fa-check-double ms-1"></i>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="text-center p-5">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Chưa có tin nhắn nào</h5>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if selected_customer %}
+                <div class="card-footer bg-white">
+                    <form id="chat-form" method="post" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="customer_id" value="{{ selected_customer.id }}">
+                        <div class="input-group">
+                            <input type="text" name="content" class="form-control" placeholder="Nhập tin nhắn..." required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i> Gửi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+    // Auto scroll to bottom of chat
+    function scrollToBottom() {
+        const chatContainer = document.querySelector('.chat-container');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Scroll to bottom on page load
+    document.addEventListener('DOMContentLoaded', scrollToBottom);
+
+    // Setup refresh button
+    const refreshButton = document.getElementById('refreshChat');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function() {
+            location.reload();
+        });
+    }
+
+    // Auto refresh chat every 30 seconds
+    {% if selected_customer %}
+    setInterval(function() {
+        location.reload();
+    }, 30000);
+    {% endif %}
+</script>
+{% endblock %}
+
+{% endblock %}

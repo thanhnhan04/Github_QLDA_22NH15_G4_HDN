@@ -82,9 +82,8 @@
                         </div>
                         <div class="mb-4">
                             <label class="form-label">Mã khuyến mãi</label>
-                            <div class="input-group">
-                                <select class="form-select" name="promo_code" required>
-                                    <option value="">-- Chọn mã khuyến mãi --</option>
+                            <div class="input-group">                                <select class="form-select" name="promo_code">
+                                    <option value="">-- Chọn mã khuyến mãi (không bắt buộc) --</option>
                                     {% for promo in available_promotions %}
                                         {% if total >= promo.min_order_total %}
                                         <option value="{{ promo.code }}" {% if promo_code == promo.code %}selected{% endif %}>

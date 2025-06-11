@@ -6,17 +6,42 @@
   <div class="login-register-card d-flex flex-column flex-md-row shadow-lg rounded-5 overflow-hidden" style="max-width: 1250px; width: 100%; background: #fff; min-height: 600px;">
     <!-- Register form side -->
     <div class="register-form-side p-5 d-flex flex-column justify-content-center align-items-center flex-fill" style="background: var(--primary-red,#FF3D00); min-width: 520px;">
-      <h2 class="fw-bold mb-4 text-center animated-gradient-text" style="letter-spacing: 1px; font-size:2.7rem;">REGISTER</h2>
-      <form method="post" class="w-100" style="max-width: 440px;">
+      <h2 class="fw-bold mb-4 text-center animated-gradient-text" style="letter-spacing: 1px; font-size:2.7rem;">REGISTER</h2>      <form method="post" class="w-100" style="max-width: 440px;" novalidate>
         {% csrf_token %}
         {% for field in form %}
         <div class="mb-4 animated-form-group">
-          {% if field.errors %}
-          <div class="alert alert-danger py-2">{{ field.errors }}</div>
-          {% endif %}
-          <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control form-control-xl rounded-pill px-4 py-3 register-input" value="{{ field.value|default:'' }}" placeholder="{{ field.label }}{% if field.field.required %} *{% endif %}" {% if field.field.required %}required{% endif %}>
+          <div class="position-relative">
+            <div class="input-group">
+              {{ field }}
+              {% if field.field.required %}
+                <div class="required-star" data-bs-toggle="tooltip" title="Trường bắt buộc">*</div>
+              {% endif %}
+            </div>
+            {% if field.help_text %}
+            <small class="form-text text-light opacity-75 ps-2 mt-2 d-block">
+              <i class="fas fa-info-circle me-1"></i>
+              {{ field.help_text }}
+            </small>
+            {% endif %}
+            {% if field.errors %}
+            <div class="alert alert-danger alert-dismissible fade show mt-2 bg-white" role="alert">
+              {% for error in field.errors %}
+              <div><i class="fas fa-exclamation-circle me-2 text-danger"></i>{{ error }}</div>
+              {% endfor %}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+          </div>
         </div>
         {% endfor %}
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+          {% for error in form.non_field_errors %}
+          <div><i class="fas fa-exclamation-circle me-2"></i>{{ error }}</div>
+          {% endfor %}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
         <div class="d-grid mb-2">
           <button type="submit" class="btn btn-lg rounded-pill fw-bold register-btn-main py-3 animated-btn" style="background: linear-gradient(90deg, var(--primary-yellow), var(--primary-orange)); color: #222; font-size:1.35rem;">Đăng Ký</button>
         </div>
@@ -137,11 +162,26 @@
     padding-bottom: 1.1rem !important;
     box-shadow: 0 2px 8px rgba(255,61,0,0.08);
   }
+  .register-input::placeholder {
+    color: rgba(0,0,0,0.4);
+    font-size: 0.95rem;
+  }
+  .register-input:focus::placeholder {
+    color: rgba(0,0,0,0.6);
+  }
   .register-input:focus {
     background: #fffbe7;
     border: 2px solid var(--primary-yellow);
     outline: none;
     box-shadow: 0 2px 8px rgba(255,193,7,0.12);
+  }
+  .register-input.is-invalid {
+    border: 2px solid #dc3545;
+    background-image: none;
+  }
+  .register-input.is-valid {
+    border: 2px solid #28a745;
+    background-image: none;
   }
   .register-btn-main {
     background: linear-gradient(90deg, var(--primary-yellow), var(--primary-orange));
@@ -185,6 +225,48 @@
     border-color: #fff;
     transform: translateY(-2px);
   }
+  /* Form validation styles */
+  .alert-danger {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 1rem;
+    color: #dc3545;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+
+  .alert-danger .btn-close {
+    font-size: 0.8rem;
+    padding: 0.5rem;
+  }
+
+  .form-text {
+    color: rgba(255,255,255,0.9) !important;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid rgba(255,255,255,0.2);
+  }
+
+  .animated-form-group {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s forwards;
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animated-form-group:nth-child(1) { animation-delay: 0.1s; }
+  .animated-form-group:nth-child(2) { animation-delay: 0.2s; }
+  .animated-form-group:nth-child(3) { animation-delay: 0.3s; }
+  .animated-form-group:nth-child(4) { animation-delay: 0.4s; }
+  .animated-form-group:nth-child(5) { animation-delay: 0.5s; }
+  .animated-form-group:nth-child(6) { animation-delay: 0.6s; }
   @media (max-width: 991px) {
     .login-register-card { flex-direction: column !important; min-width: 100% !important; }
     .register-form-side, .login-side { min-width: 100% !important; padding: 2rem 1rem !important; }

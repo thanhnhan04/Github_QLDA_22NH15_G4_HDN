@@ -6,6 +6,8 @@ from django.shortcuts import render, redirect
 from django.db.models import Q  # Import Q for filtering
 from .models import Product, Order, User, Message  # Ensure correct imports
 from django.db import models
+from django.utils import timezone
+from datetime import timedelta
 
 @staff_member_required
 def admin_home(request):
@@ -107,25 +109,49 @@ def chat(request):
     if request.user.role == 'admin':
         return redirect('admin_customer_support')
 
-    # Get all admin users to track messages with any admin
-    admin_users = User.objects.filter(role='admin')
+    # Get all online admin users (active in last 5 minutes)
+    five_minutes_ago = timezone.now() - timedelta(minutes=5)
+    online_admins = User.objects.filter(
+        role='admin',
+        last_login__gte=five_minutes_ago
+    )
     
     if request.method == 'POST':
         content = request.POST.get('content', '').strip()
-        if content and admin_users.exists():
-            # Send message to the first admin
-            admin_user = admin_users.first()
-            Message.objects.create(sender=request.user, receiver=admin_user, content=content)
+        if content:
+            if online_admins.exists():
+                # Send message to all online admins
+                for admin in online_admins:
+                    Message.objects.create(
+                        sender=request.user,
+                        receiver=admin,
+                        content=content
+                    )
+            else:
+                # If no admin online, send to first admin in system
+                admin = User.objects.filter(role='admin').first()
+                if admin:
+                    Message.objects.create(
+                        sender=request.user,
+                        receiver=admin, 
+                        content=content
+                    )
         return redirect('chat')
 
-    # Get messages between the customer and any admin
+    # Get messages between customer and any admin
     messages = Message.objects.filter(
-        Q(sender=request.user, receiver__in=admin_users) |  # Messages from customer to any admin
-        Q(sender__in=admin_users, receiver=request.user)    # Messages from any admin to customer
+        Q(sender=request.user, receiver__role='admin') |
+        Q(sender__role='admin', receiver=request.user)    
     ).order_by('timestamp')
 
-    return render(request, 'core/chat.html', {
+    # Mark messages as read
+    messages.filter(receiver=request.user, is_read=False).update(is_read=True)
+
+    context = {
         'messages': messages,
+        'online_admins': online_admins,
         'is_chat_page': True
-    })
+    }
+
+    return render(request, 'core/chat.html', context)
 

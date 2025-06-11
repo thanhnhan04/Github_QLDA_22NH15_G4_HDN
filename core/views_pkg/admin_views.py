@@ -4,11 +4,11 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db import models
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Max
 from django.utils import timezone
 from datetime import timedelta
 from ..models import Product, Category, Order, OrderItem, User
-from ..models import Promotion, OrderReview
+from ..models import Promotion, OrderReview, Message
 from core.models import Notification
 
 @staff_member_required
@@ -341,3 +341,72 @@ def admin_promotion_delete(request, pk):
         messages.success(request, 'Đã xóa khuyến mãi!')
         return redirect('admin_promotions')
     return render(request, 'core/admin/promotion_form.html', {'promo': promo, 'action': 'delete', 'is_admin_page': True})
+
+@staff_member_required
+def admin_chat(request):
+    # Get all customers who have chat history with any admin
+    customers_with_chats = User.objects.filter(
+        Q(sent_messages__receiver__role='admin') | Q(received_messages__sender__role='admin'),
+        role='customer'
+    ).distinct()
+
+    # Get the selected customer
+    customer_id = request.GET.get('customer_id')
+    selected_customer = None
+    chat_messages = []
+
+    if customer_id:
+        try:
+            selected_customer = User.objects.get(id=customer_id, role='customer')
+            
+            # Get all chat messages between the selected customer and any admin
+            chat_messages = Message.objects.filter(
+                Q(sender=selected_customer, receiver__role='admin') |
+                Q(sender__role='admin', receiver=selected_customer)
+            ).order_by('timestamp')
+
+            # Mark messages as read only for current admin
+            chat_messages.filter(receiver=request.user, is_read=False).update(is_read=True)
+            
+        except User.DoesNotExist:
+            pass
+
+    # Handle sending messages
+    if request.method == 'POST' and selected_customer:
+        content = request.POST.get('content', '').strip()
+        if content:
+            # Create message only from current admin
+            Message.objects.create(
+                sender=request.user,
+                receiver=selected_customer,
+                content=content
+            )
+            return redirect(f'{request.path}?customer_id={customer_id}')
+
+    # Get online admins (active in last 5 minutes)
+    five_minutes_ago = timezone.now() - timedelta(minutes=5)
+    online_admins = User.objects.filter(
+        role='admin',
+        last_login__gte=five_minutes_ago
+    ).order_by('username')
+
+    # Get unread message counts per customer for current admin only
+    unread_counts = {}
+    for customer in customers_with_chats:
+        unread_count = Message.objects.filter(
+            sender=customer,
+            receiver=request.user,  # Only count messages to current admin
+            is_read=False
+        ).count()
+        unread_counts[customer.id] = unread_count
+
+    context = {
+        'customers': customers_with_chats,
+        'selected_customer': selected_customer,
+        'chat_messages': chat_messages,
+        'online_admins': online_admins,
+        'unread_counts': unread_counts,
+        'is_chat_page': True
+    }
+
+    return render(request, 'core/admin/chat.html', context)

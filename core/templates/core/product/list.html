@@ -80,7 +80,7 @@
                     </div>
                 </div>
                 <!-- Modal for product details -->
-                <div class="modal fade" id="productModal{{ product.id }}" tabindex="-1">
+                <div class="modal fade" id="productModal{{ product.id }}" data-bs-backdrop="false" tabindex="-1">
                     <div class="modal-dialog modal-lg modal-dialog-centered">
                         <div class="modal-content border-0">
                             <div class="modal-header border-0">
@@ -271,6 +271,44 @@
     transform: scale(1.06) translateY(-2px) rotate(-1deg);
     box-shadow: 0 8px 24px rgba(255,61,0,0.18);
   }
+  /* Adjust modal styling */
+.modal.fade:not(.show) {
+    background: transparent;
+}
+
+.modal {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.modal-dialog {
+    z-index: 1050;
+}
+
+.modal-content {
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 2rem;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+}
+
+.modal-header {
+    border: none;
+    padding: 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.btn-close {
+    opacity: 0.8;
+    transition: all 0.2s;
+}
+
+.btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
   @media (max-width: 991px) {
     .product-modern-img-wrap { height: 180px; }
     .product-modern-card { border-radius: 1.2rem; }
@@ -288,3 +326,58 @@
   <div class="blob blob4"></div>
 </div>
 {% endblock %}
+
+{# Add this just before the closing </body> tag #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Make modals draggable
+    document.querySelectorAll('.modal-dialog').forEach(modalDialog => {
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        modalDialog.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+
+        function dragStart(e) {
+            if (e.target.closest('.modal-header')) {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+                isDragging = true;
+            }
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+                modalDialog.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+            }
+        }
+
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+    });
+
+    // Close modal when clicking outside
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                let bsModal = bootstrap.Modal.getInstance(modal);
+                bsModal.hide();
+            }
+        });
+    });
+});
+</script>

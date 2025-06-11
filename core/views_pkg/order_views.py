@@ -38,6 +38,8 @@ def order_create(request):
     promo_error = ''
     promo_code = request.POST.get('promo_code', '').strip() if request.method == 'POST' else ''
     promo = None
+    
+    # Only validate promotion if a code is provided
     if promo_code:
         try:
             promo = Promotion.objects.get(code=promo_code, is_active=True, start_date__lte=now, end_date__gte=now)
@@ -46,6 +48,7 @@ def order_create(request):
                 promo = None
         except Promotion.DoesNotExist:
             promo_error = 'Mã khuyến mãi không hợp lệ hoặc đã hết hạn.'
+
     if promo:
         if promo.discount_percent:
             discount = cart_total * promo.discount_percent / 100
@@ -54,28 +57,28 @@ def order_create(request):
         if discount > cart_total:
             discount = cart_total
     final_total = cart_total - discount
-    if request.method == 'POST' and not promo_error:
-        with transaction.atomic():
-            order = Order.objects.create(
-                customer=request.user,
-                total=final_total,
-                status='pending',
-                payment_method=request.POST.get('payment_method'),
-                note=request.POST.get('note', '')
-            )
-            for cart_item in cart.items.all():
-                OrderItem.objects.create(
-                    order=order,
-                    product=cart_item.product,
-                    product_name=cart_item.product_name,
-                    product_image_url=cart_item.product_image_url,
-                    quantity=cart_item.quantity,
-                    unit_price=cart_item.price,
-                    total_price=cart_item.price * cart_item.quantity
-                )
-            cart.items.all().delete()
-            messages.success(request, f'Đơn hàng #{order.id} đã được tạo thành công!')
-            return redirect('order_detail', pk=order.id)
+
+    # Allow order to proceed regardless of promotion validation
+    if request.method == 'POST':
+        payment_method = request.POST.get('payment_method')
+        note = request.POST.get('note', '')
+
+        if not payment_method:
+            messages.error(request, 'Vui lòng chọn phương thức thanh toán!')
+            return redirect('order_create')
+
+        return render(request, 'core/order/confirm.html', {
+            'cart': cart,
+            'user': request.user,
+            'total': cart_total,
+            'discount': discount,
+            'final_total': final_total,
+            'payment_method': payment_method,
+            'note': note,
+            'promo_code': promo_code if not promo_error else '',
+            'promo_error': promo_error,
+        })
+
     return render(request, 'core/order/create.html', {
         'cart': cart,
         'total': cart_total,
@@ -177,6 +180,7 @@ def order_confirm(request):
     if not cart.items.exists():
         messages.error(request, 'Giỏ hàng của bạn đang trống!')
         return redirect('cart_detail')
+    
     now = timezone.now()
     total = sum(item.price * item.quantity for item in cart.items.all())
     payment_method = request.POST.get('payment_method', '')
@@ -185,6 +189,8 @@ def order_confirm(request):
     discount = 0
     promo = None
     promo_error = ''
+
+    # Only process promotion if a code is provided
     if promo_code:
         try:
             promo = Promotion.objects.get(code=promo_code, is_active=True, start_date__lte=now, end_date__gte=now)
@@ -193,6 +199,7 @@ def order_confirm(request):
                 promo = None
         except Promotion.DoesNotExist:
             promo_error = 'Mã khuyến mãi không hợp lệ hoặc đã hết hạn.'
+
     if promo:
         if promo.discount_percent:
             discount = total * promo.discount_percent / 100
@@ -201,6 +208,8 @@ def order_confirm(request):
         if discount > total:
             discount = total
     final_total = total - discount
+
+    # Create order if confirmed, regardless of promotion status
     if request.method == 'POST' and request.POST.get('confirm') == '1':
         with transaction.atomic():
             order = Order.objects.create(
@@ -223,6 +232,7 @@ def order_confirm(request):
             cart.items.all().delete()
             messages.success(request, f'Đơn hàng #{order.id} đã được tạo thành công!')
             return redirect('order_detail', pk=order.id)
+
     return render(request, 'core/order/confirm.html', {
         'cart': cart,
         'user': request.user,
@@ -231,7 +241,7 @@ def order_confirm(request):
         'final_total': final_total,
         'payment_method': payment_method,
         'note': note,
-        'promo_code': promo_code,
+        'promo_code': promo_code if not promo_error else '',
         'promo_error': promo_error,
     })
 
