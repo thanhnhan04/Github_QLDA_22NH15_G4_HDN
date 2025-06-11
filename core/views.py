@@ -97,7 +97,7 @@ def admin_customer_support(request):
     return render(request, 'core/admin/customer_support.html', {
         'customers': customers,
         'selected_customer': selected_customer,
-        'messages': messages,
+        'chat_messages': chat_messages,
         'is_customer_support_page': True,  # Add context for template identification
     })
 

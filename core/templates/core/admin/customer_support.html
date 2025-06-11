@@ -4,6 +4,14 @@
 {% block content %}
 <div class="container mt-5">
     <h2 class="text-center mb-4">Hỗ trợ khách hàng</h2>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
     <div class="row">
         <!-- Danh sách khách hàng -->
         <div class="col-md-4">
@@ -39,8 +47,8 @@
                 </div>
 
                 <div class="card-body" style="max-height: 400px; overflow-y: auto; background-color: #f8f9fa;">
-                    {% if messages %}
-                        {% for message in messages %}
+                    {% if chat_messages %}
+                        {% for message in chat_messages %}
                             <div class="d-flex {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %} mb-2">
                                 <div class="p-2 rounded shadow-sm {% if message.sender == request.user %}bg-primary text-white{% else %}bg-light border{% endif %}" style="max-width: 70%;">
                                     {{ message.content|safe }}
