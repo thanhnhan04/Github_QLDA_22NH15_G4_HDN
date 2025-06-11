@@ -58,6 +58,7 @@ def admin_home(request):
 
 @staff_member_required
 def admin_customer_support(request):
+    from django.contrib import messages  # Import messages framework
     admin_users = User.objects.filter(role='admin')
 
     # Lấy danh sách customer đã gửi tin nhắn đến bất kỳ admin nào
@@ -66,19 +67,19 @@ def admin_customer_support(request):
 
     customer_id = request.GET.get('customer_id')
     selected_customer = None
-    messages = []
+    chat_messages = []  # Renamed to avoid conflict with Django messages framework
 
     if customer_id:
         try:
             selected_customer = User.objects.get(id=customer_id)
             # Lấy tất cả tin nhắn giữa selected_customer và bất kỳ admin nào
-            messages = Message.objects.filter(
+            chat_messages = Message.objects.filter(
                 Q(sender=selected_customer, receiver__in=admin_users) |
                 Q(sender__in=admin_users, receiver=selected_customer)
             ).order_by('timestamp')
         except User.DoesNotExist:
             selected_customer = None
-            messages = []
+            chat_messages = []
 
     # Xử lý gửi tin nhắn từ admin đến selected_customer
     if request.method == 'POST':
@@ -88,8 +89,9 @@ def admin_customer_support(request):
             try:
                 customer = User.objects.get(id=customer_id_post)
                 Message.objects.create(sender=request.user, receiver=customer, content=content)
+                messages.success(request, 'Tin nhắn đã được gửi thành công.')
             except User.DoesNotExist:
-                pass
+                messages.error(request, 'Không tìm thấy khách hàng.')
         return redirect(f"{request.path}?customer_id={customer_id_post}")
 
     return render(request, 'core/admin/customer_support.html', {
@@ -102,17 +104,28 @@ def admin_customer_support(request):
 
 @login_required
 def chat(request):
+    if request.user.role == 'admin':
+        return redirect('admin_customer_support')
+
+    # Get all admin users to track messages with any admin
+    admin_users = User.objects.filter(role='admin')
+    
     if request.method == 'POST':
         content = request.POST.get('content', '').strip()
-        if content:
-            admin_user = User.objects.filter(role='admin').first()
-            if admin_user:
-                Message.objects.create(sender=request.user, receiver=admin_user, content=content)
+        if content and admin_users.exists():
+            # Send message to the first admin
+            admin_user = admin_users.first()
+            Message.objects.create(sender=request.user, receiver=admin_user, content=content)
         return redirect('chat')
 
+    # Get messages between the customer and any admin
     messages = Message.objects.filter(
-        Q(sender=request.user) | Q(receiver=request.user)
+        Q(sender=request.user, receiver__in=admin_users) |  # Messages from customer to any admin
+        Q(sender__in=admin_users, receiver=request.user)    # Messages from any admin to customer
     ).order_by('timestamp')
 
-    return render(request, 'core/chat.html', {'messages': messages})
+    return render(request, 'core/chat.html', {
+        'messages': messages,
+        'is_chat_page': True
+    })
 

@@ -159,5 +159,5 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)  # Thêm trường này
 
-    def __str__(self):
-        return f"Message from {self.sender} to {self.receiver} at {self.timestamp}"
+    # def __str__(self):
+    #     return f"Message from {self.sender} to {self.receiver} at {self.timestamp}"
